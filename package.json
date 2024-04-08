@@ -1,0 +1,16 @@
+{
+  "name": "physmodbot",
+  "version": "1.0.0",
+  "description": "A bot for the Physics Mod server by Haubna",
+  "main": "index.js",
+  "type": "commonjs",
+  "author": "PapiOphidian",
+  "license": "SEE LICENSE IN LICENSE",
+  "private": true,
+  "dependencies": {
+    "@types/node": "^20.12.2",
+    "cloudstorm": "^0.10.8",
+    "heatsync": "^2.5.1",
+    "snowtransfer": "^0.10.5"
+  }
+}
