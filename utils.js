@@ -135,7 +135,7 @@ module.exports.onGatewayDispatch = async function onGatewayDispatch(data) {
 /** @param {import("discord-api-types/v10").GatewayMessageCreateDispatchData} msg */
 function checkTriggers(msg) {
 	for (const entry of Object.values(triggerMap)) {
-		if (entry.ignoreRoles?.find(r => msg.member && msg.member.roles.includes(r))) return
+		if (entry.ignoreRoles?.find(r => msg.member && msg.member.roles.includes(r))) continue
 		const positions = entry.matchers.map(matcher => {
 			const match = matcher.exec(msg.content)
 			return match?.index ?? -1
