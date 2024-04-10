@@ -15,6 +15,8 @@ const modAndVersionRegex2 = /([^:]+): [^\d]+(.+)/
 const modAndVersionRegex3 = /[^|]+\|[^|]+\|([^|]+)\|([^|]+)/
 const OOMRegex = /# There is insufficient memory for the Java Runtime Environment to continue/
 
+passthrough.snow.requestHandler.on("requestError", console.error)
+
 /** @param {number} index */
 const nn1 = (index) => index !== -1
 /**
