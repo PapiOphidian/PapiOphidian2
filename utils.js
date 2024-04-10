@@ -1,10 +1,7 @@
+const fs = require("fs")
+const path = require("path")
+
 const passthrough = require("./passthrough")
-
-const keywords = [/how /, / get /, / download /, / ?physics/, / pro/]
-const steamScamKeywords = ["50", "gift"]
-const serverLinkRegex = /(?:https?:\/\/)?discord\.gg\/\w+/
-
-const excludedRoles = ["947414444550549515", "673969281444216834", "1062898572686798960"]
 
 const javaErrorFrameRegex = /[\t ]at ((?:\w+\.)[\w.\[\]\(\):~\? \$\/\-\+<>]+)/
 const exceptionHeadRegex = /((?:[\w.]+Exception: .+)|(?:Stacktrace:))/
@@ -24,13 +21,90 @@ const nn1 = (index) => index !== -1
  * @param {Array<number>} positions
  * @param {Array<number>} indexes
  */
-const buildCase = (positions, ...indexes) => {
-	const everyIsntNull = indexes.every(i => nn1(positions[i]))
-	const isCloseInDistanceAndSequential = positions.filter(nn1).every((i, ind, arr) => {
-		const difference = i - arr[ind - 1]
-		return ind !== 0 ? (difference > 0 && difference < 10) : true
-	})
-	return everyIsntNull && isCloseInDistanceAndSequential
+const buildCase = (positions, maxDistance = 10, ...indexes) => {
+	// allow for short circuiting
+	const careAbout = indexes.map(i => positions[i])
+	return careAbout.every(i => nn1(i))
+		&& (maxDistance !== - 1
+			? careAbout.every((i, ind) => {
+					if (ind === 0) return true
+					const difference = i - careAbout[ind - 1]
+					return difference > 0 && difference < maxDistance
+				})
+			: true)
+}
+
+const goodRoles = ["947414444550549515", "673969281444216834", "1062898572686798960"]
+
+/** @type {Record<string, { ignoreRoles?: Array<string>, matchers: Array<RegExp>, test: (positions: Array<number>) => boolean, trigger: (message: import("discord-api-types/v10").GatewayMessageCreateDispatchData) => unknown }>} */
+const triggerMap = {
+	"scams": {
+		ignoreRoles: goodRoles,
+		matchers: [/50/, /gift/i, /(?:https?:\/\/)?discord\.gg\/\w+/],
+		test(positions) {
+			return buildCase(positions, -1, 0, 1) // steam scam
+				|| buildCase(positions, -1, 2) // discord link (possibly nsfw)
+		},
+		async trigger(msg) {
+			if (!msg.guild_id) return
+			const timeout = new Date()
+			timeout.setDate(timeout.getDate() + 7) // 1 week timeout
+			const cont = await Promise.all([
+				passthrough.snow.channel.deleteMessage(msg.channel_id, msg.id, "scamming"),
+				passthrough.snow.guild.updateGuildMember(msg.guild_id, msg.author.id, {
+					communication_disabled_until: timeout.toISOString()
+				})
+			]).then(() => true).catch(() => false)
+
+			if (!cont) {
+				console.log(`Failed to timeout user ${msg.author.username} (${msg.author.id}) for possible scam\n\n${msg.content}`)
+				return true
+			}
+
+			passthrough.snow.channel.createMessage("934909491613421598", { content: `Timed out <@${msg.author.id}> for scamming.\n\`\`\`\n${msg.content}\`\`\`` })
+		}
+	},
+	"download": {
+		matchers: [/how /i, / get /i, / download /i, / ?physics/i, / pro/i],
+		test(positions) {
+			return buildCase(positions, 15, 0, 1, 3) // how get physics
+				|| buildCase(positions, 15, 0, 1, 4) // how get pro
+				|| buildCase(positions, 15, 0, 2, 3) // how download physics
+				|| buildCase(positions, 15, 0, 2, 4) // how download pro
+				|| buildCase(positions, 15, 1, 4) // get pro
+				|| buildCase(positions, 15, 2, 4) // download pro
+		},
+		trigger(msg) {
+			passthrough.snow.channel.createMessage(msg.channel_id, {
+				files: [{
+					name: "pysiksmodtutorial.mp4",
+					file: fs.createReadStream(path.join(__dirname, "./videos/download.mp4"))
+				}],
+				message_reference: {
+					message_id: msg.id,
+					channel_id: msg.channel_id,
+					guild_id: msg.guild_id
+				}
+			})
+		}
+	},
+	"pojav": {
+		matchers: [/work/i, / with /i, / ?pojav/i],
+		test(positions) {
+			return buildCase(positions, 15, 0, 1, 2) // work with pojav
+				|| buildCase(positions, 15, 2, 0) // pojav work
+		},
+		trigger(msg) {
+			passthrough.snow.channel.createMessage(msg.channel_id, {
+				content: "Physics Mod does not work with Pojav. No efforts are currently being made to make Physics Mod work with Pojav or any other launcher made for ARM based CPUs. If your platform supports x86 instruction emulation/translation, use that.",
+				message_reference: {
+					message_id: msg.id,
+					channel_id: msg.channel_id,
+					guild_id: msg.guild_id
+				}
+			})
+		}
+	}
 }
 
 /**
@@ -49,12 +123,8 @@ module.exports.onGatewayDispatch = async function onGatewayDispatch(data) {
 		case "MESSAGE_CREATE": {
 			if (data.d.author.bot) return
 
-			if (checkHowDownloadPro(data.d)) return
+			if (checkTriggers(data.d)) return
 			if (await checkCrashLog(data.d)) return
-
-			if (data.d.member?.roles.some(r => excludedRoles.includes(r))) return // dont bonk admins, mods or helpers
-
-			if (await checkScams(data.d)) return
 			break
 		}
 
@@ -63,62 +133,18 @@ module.exports.onGatewayDispatch = async function onGatewayDispatch(data) {
 }
 
 /** @param {import("discord-api-types/v10").GatewayMessageCreateDispatchData} msg */
-function checkHowDownloadPro(msg) {
-	const content = msg.content.toLowerCase()
-	const positions = keywords.map(word => {
-		const match = word.exec(content)
-		return match?.index ?? -1
-	})
-
-	const cases = [
-		buildCase(positions, 0, 1, 3), // how get physics
-		buildCase(positions, 0, 1, 4), // how get pro
-		buildCase(positions, 0, 2, 3), // how download physics
-		buildCase(positions, 0, 2, 4), // how download pro
-		buildCase(positions, 1, 4), // get pro
-		buildCase(positions, 2, 4) // download pro
-	]
-
-	if (cases.includes(true)) {
-		passthrough.snow.channel.createMessage(msg.channel_id, {
-			content: "https://discord.com/channels/231062298008092673/882927654007881778/1223817625365254174",
-			message_reference: {
-				message_id: msg.id,
-				channel_id: msg.channel_id,
-				guild_id: msg.guild_id
-			}
+function checkTriggers(msg) {
+	for (const entry of Object.values(triggerMap)) {
+		if (entry.ignoreRoles?.find(r => msg.member && msg.member.roles.includes(r))) return
+		const positions = entry.matchers.map(matcher => {
+			const match = matcher.exec(msg.content)
+			return match?.index ?? -1
 		})
-		return true
-	}
-
-	return false
-}
-
-/** @param {import("discord-api-types/v10").GatewayMessageCreateDispatchData} msg */
-async function checkScams(msg) {
-	if (!msg.guild_id) return false
-	const content = msg.content.toLowerCase()
-	const isSteamScam = steamScamKeywords.every(i => content.includes(i))
-	const isServerLink = serverLinkRegex.test(content)
-
-	if (isSteamScam || isServerLink) {
-		const reason = isServerLink ? "posting a server link" : "scamming"
-		const timeout = new Date()
-		timeout.setDate(timeout.getDate() + 7) // 1 week timeout
-		const cont = await Promise.all([
-			passthrough.snow.channel.deleteMessage(msg.channel_id, msg.id, reason),
-			passthrough.snow.guild.updateGuildMember(msg.guild_id, msg.author.id, {
-				communication_disabled_until: timeout.toISOString()
-			})
-		]).then(() => true).catch(() => false)
-
-		if (!cont) {
-			console.log(`Failed to timeout user ${msg.author.username} (${msg.author.id}) for possible scam\n\n${msg.content}`)
+		const triggers = entry.test(positions)
+		if (triggers) {
+			entry.trigger(msg)
 			return true
 		}
-
-		passthrough.snow.channel.createMessage("934909491613421598", { content: `Timed out <@${msg.author.id}> for ${reason}.\n\`\`\`\n${msg.content}\`\`\`` })
-		return true
 	}
 
 	return false
@@ -146,7 +172,7 @@ function performCrashCheckOn(str) {
 	const split = str.split("\n")
 	/** @type {Array<Array<string>>} */
 	const errors = []
-	let currentErrorsIndex = 0;
+	let currentErrorsIndex = 0
 	let expectingFrame = false
 	for (const element of split) {
 		const head = exceptionHeadRegex.exec(element)
@@ -175,7 +201,7 @@ async function sendCrashLogBreakdown(msg, log, errors) {
 	const hasOptifine = optifineRegex.test(log)
 	const isFML = log.includes("minecraftforge") && !log.includes("fabricmc")
 	const isFabric = fabricRegex.test(log)
-	/** @type {Array<{ appearances: number; frames: Array<string> }>} */
+	/** @type {Array<{ appearances: number, frames: Array<string> }>} */
 	const deduped = []
 	for (const e of errors) {
 		const existing = deduped.find(ex => ex.frames[0] === e[0])
