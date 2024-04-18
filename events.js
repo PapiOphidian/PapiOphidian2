@@ -28,7 +28,10 @@ sync.addTemporaryListener(
 			case "MESSAGE_CREATE": {
 				if (data.d.author.bot) return
 
-				utils.setCachedObject("message", data.d.id, data.d, 1000 * 60 * 60 * 2)
+				if (!data.d.guild_id) return
+				/** @type {DBStarboards | undefined} */
+				const sb = await db.get("SELECT * FROM starboards WHERE guild_id =?", [data.d.guild_id])
+				if (sb && !sb.ignore_channel_ids?.split(",").includes(data.d.channel_id)) utils.setCachedObject("message", data.d.id, data.d, 1000 * 60 * 60 * 2)
 
 				if (utils.checkTriggers(data.d)) return
 				if (await utils.checkCrashLog(data.d)) return
