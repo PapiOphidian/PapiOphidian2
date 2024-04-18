@@ -64,11 +64,13 @@ sync.addTemporaryListener(
 				const reaction = message.reactions.find(r => r.emoji.name === data.d.emoji.name)
 				if (!reaction) return
 
+				const instantPromote = !!(sb.instant_promote_role_ids?.split(",") ?? []).find(r => data.d.member?.roles.includes(r))
+
 				/** @type {DBStarboardMap | undefined} */
 				const existingPost = await db.get("SELECT * FROM starboard_map WHERE message_id =?", [data.d.message_id])
 				const content = utils.replace(starboardContentFormat, { "emoji": sb.emoji, "reactions": reaction.count, "jump": `https://discord.com/channels/${data.d.guild_id}/${data.d.channel_id}/${data.d.message_id}` })
 				if (existingPost) snow.channel.editMessage(sb.channel_id, existingPost.message_id, { content })
-				else if (reaction.count >= sb.min) {
+				else if (reaction.count >= sb.min || instantPromote) {
 					const result = await snow.channel.createMessage(sb.channel_id, {
 						content,
 						embeds: [
