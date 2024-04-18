@@ -74,7 +74,7 @@ sync.addTemporaryListener(
 				/** @type {DBStarboardMap | undefined} */
 				const existingPost = await db.get("SELECT * FROM starboard_map WHERE message_id =?", [data.d.message_id])
 				const content = utils.replace(starboardContentFormat, { "emoji": sb.emoji, "reactions": reaction.count, "jump": `https://discord.com/channels/${data.d.guild_id}/${data.d.channel_id}/${data.d.message_id}` })
-				if (existingPost) snow.channel.editMessage(sb.channel_id, existingPost.message_id, { content })
+				if (existingPost) snow.channel.editMessage(sb.channel_id, existingPost.sb_message_id, { content })
 				else if (reaction.count >= sb.min || instantPromote) {
 					const result = await snow.channel.createMessage(sb.channel_id, {
 						content,
