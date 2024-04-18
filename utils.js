@@ -2,28 +2,19 @@ const fs = require("fs")
 const path = require("path")
 
 const passthrough = require("./passthrough")
+const { snow } = passthrough
 
-const javaErrorFrameRegex = /[\t ]at ((?:\w+\.)[\w.\[\]\(\):~\? \$\/\-\+<>]+)/
-const exceptionHeadRegex = /((?:[\w.]+Exception: .+)|(?:Stacktrace:))/
-const optifineRegex = /\[optifine]/i
-const fabricRegex = /fabric/i
-const easyModListRegex = /Loading (\d+) mods:/
-const fabricModsListCrashRegex = /Fabric Mods:/
-const forgeModsListCrashRegex = /Mod List:/
-const modAndVersionRegex1 = /([^ ]+) (.+)/
-const modAndVersionRegex2 = /([^:]+): [^\d]+(.+)/
-const modAndVersionRegex3 = /[^|]+\|[^|]+\|([^|]+)\|([^|]+)/
-const OOMRegex = /# There is insufficient memory for the Java Runtime Environment to continue/
-
-passthrough.snow.requestHandler.on("requestError", console.error)
 
 /** @param {number} index */
 const nn1 = (index) => index !== -1
+module.exports.nn1 = nn1
+
+
 /**
  * @param {Array<number>} positions
  * @param {Array<number>} indexes
  */
-const buildCase = (positions, maxDistance = 10, ...indexes) => {
+function buildCase(positions, maxDistance = 10, ...indexes) {
 	// allow for short circuiting
 	const careAbout = indexes.map(i => positions[i])
 	return careAbout.every(i => nn1(i))
@@ -35,13 +26,28 @@ const buildCase = (positions, maxDistance = 10, ...indexes) => {
 				})
 			: true)
 }
+module.exports.buildCase = buildCase
 
-const goodRoles = ["947414444550549515", "673969281444216834", "1062898572686798960"]
 
-/** @type {Record<string, { ignoreRoles?: Array<string>, matchers: Array<RegExp>, test: (positions: Array<number>) => boolean, trigger: (message: import("discord-api-types/v10").GatewayMessageCreateDispatchData) => unknown }>} */
+// [Mod, Admin, Helper]
+const physModGoodRoles = ["947414444550549515", "673969281444216834", "1062898572686798960"]
+// [Staff]
+const mumsHouseGoodRoles = ["297202820162125824"]
+const physModGuildID = "231062298008092673"
+const mumsHouseGuildID = "214249708711837696"
+/** @type {Record<string, string>} */
+const reportChannelMap = {
+	// Physics Mod: admin-messages
+	[physModGuildID]: "934909491613421598",
+	// Mum's House: 4k_cctv
+	[mumsHouseGuildID]: "300752762973585418"
+}
+
+
+/** @type {Record<string, { guild?: string, ignoreRoles?: Array<string>, matchers: Array<RegExp>, test: (positions: Array<number>) => boolean, trigger: (message: import("discord-api-types/v10").GatewayMessageCreateDispatchData) => unknown }>} */
 const triggerMap = {
 	"scams": {
-		ignoreRoles: goodRoles,
+		ignoreRoles: [...physModGoodRoles, ...mumsHouseGoodRoles],
 		matchers: [/50/, /gift/i, /(?:https?:\/\/)?discord\.gg\/\w+/],
 		test(positions) {
 			return buildCase(positions, -1, 0, 1) // steam scam
@@ -52,8 +58,8 @@ const triggerMap = {
 			const timeout = new Date()
 			timeout.setDate(timeout.getDate() + 7) // 1 week timeout
 			const cont = await Promise.all([
-				passthrough.snow.channel.deleteMessage(msg.channel_id, msg.id, "scamming"),
-				passthrough.snow.guild.updateGuildMember(msg.guild_id, msg.author.id, {
+				snow.channel.deleteMessage(msg.channel_id, msg.id, "scamming"),
+				snow.guild.updateGuildMember(msg.guild_id, msg.author.id, {
 					communication_disabled_until: timeout.toISOString()
 				})
 			]).then(() => true).catch(() => false)
@@ -63,11 +69,15 @@ const triggerMap = {
 				return true
 			}
 
-			passthrough.snow.channel.createMessage("934909491613421598", { content: `Timed out <@${msg.author.id}> for scamming.\n\`\`\`\n${msg.content}\`\`\`` })
+			const channel = reportChannelMap[msg.guild_id]
+			if (!channel) return
+
+			snow.channel.createMessage(channel, { content: `Timed out <@${msg.author.id}> for scamming.\n\`\`\`\n${msg.content}\`\`\`` })
 		}
 	},
-	"download": {
-		matchers: [/how /i, / get /i, / download /i, / ?physics/i, / pro/i],
+	"phys_download": {
+		guild: physModGuildID,
+		matchers: [/how /i, / get /i, / download /i, / ?physics/i, / pro/i, /buy/i, /patreon /i, / tier/i],
 		test(positions) {
 			return buildCase(positions, 15, 0, 1, 3) // how get physics
 				|| buildCase(positions, 15, 0, 1, 4) // how get pro
@@ -75,9 +85,12 @@ const triggerMap = {
 				|| buildCase(positions, 15, 0, 2, 4) // how download pro
 				|| buildCase(positions, 15, 1, 4) // get pro
 				|| buildCase(positions, 15, 2, 4) // download pro
+				|| buildCase(positions, 15, 5, 4) // buy pro
+				|| buildCase(positions, 10, 6, 7) // patreon tier
 		},
 		trigger(msg) {
-			passthrough.snow.channel.createMessage(msg.channel_id, {
+			snow.channel.createMessage(msg.channel_id, {
+				content: "Here's a video on how to download physics mod pro! The downloads are only through patreon and Ko-Fi, but you don't *have* to pay.\nSupport is always appreciated however!",
 				files: [{
 					name: "pysiksmodtutorial.mp4",
 					file: fs.createReadStream(path.join(__dirname, "./videos/download.mp4"))
@@ -90,14 +103,15 @@ const triggerMap = {
 			})
 		}
 	},
-	"pojav": {
+	"phys_pojav": {
+		guild: physModGuildID,
 		matchers: [/work/i, / with /i, / ?pojav/i],
 		test(positions) {
 			return buildCase(positions, 15, 0, 1, 2) // work with pojav
 				|| buildCase(positions, 15, 2, 0) // pojav work
 		},
 		trigger(msg) {
-			passthrough.snow.channel.createMessage(msg.channel_id, {
+			snow.channel.createMessage(msg.channel_id, {
 				content: "Physics Mod does not work with Pojav. No efforts are currently being made to make Physics Mod work with Pojav or any other launcher made for ARM based CPUs. If your platform supports x86 instruction emulation/translation, use that.",
 				message_reference: {
 					message_id: msg.id,
@@ -108,35 +122,13 @@ const triggerMap = {
 		}
 	}
 }
+module.exports.triggerMap = triggerMap
 
-/**
- *
- * @param {import("cloudstorm").IGatewayDispatch} data
- */
-module.exports.onGatewayDispatch = async function onGatewayDispatch(data) {
-	switch (data.t) {
-
-		case "INTERACTION_CREATE": {
-			// @ts-ignore
-			if (data.d.type === 2) passthrough.commands.handle(data.d, passthrough.snow)
-			break
-		}
-
-		case "MESSAGE_CREATE": {
-			if (data.d.author.bot) return
-
-			if (checkTriggers(data.d)) return
-			if (await checkCrashLog(data.d)) return
-			break
-		}
-
-		default: break
-	}
-}
 
 /** @param {import("discord-api-types/v10").GatewayMessageCreateDispatchData} msg */
 function checkTriggers(msg) {
 	for (const entry of Object.values(triggerMap)) {
+		if (msg.guild_id && entry.guild && entry.guild !== msg.guild_id) continue
 		if (entry.ignoreRoles?.find(r => msg.member && msg.member.roles.includes(r))) continue
 		const positions = entry.matchers.map(matcher => {
 			const match = matcher.exec(msg.content)
@@ -151,9 +143,10 @@ function checkTriggers(msg) {
 
 	return false
 }
+module.exports.checkTriggers = checkTriggers
+
 
 const crashLogTypes = [".txt", ".log"]
-
 /** @param {import("discord-api-types/v10").GatewayMessageCreateDispatchData} msg */
 async function checkCrashLog(msg) {
 	if (crashLogTypes.find(type => msg.attachments[0]?.filename.endsWith(type))) {
@@ -167,6 +160,11 @@ async function checkCrashLog(msg) {
 
 	return false
 }
+module.exports.checkCrashLog = checkCrashLog
+
+
+const javaErrorFrameRegex = /[\t ]at ((?:\w+\.)[\w.[\]():~? $/\-+<>]+)/
+const exceptionHeadRegex = /((?:[\w.]+Exception: .+)|(?:Stacktrace:))/
 /** @param {string} str */
 function performCrashCheckOn(str) {
 	const isMC = str.includes("minecraft")
@@ -194,6 +192,11 @@ function performCrashCheckOn(str) {
 
 	return errors
 }
+
+
+const optifineRegex = /\[optifine]/i
+const fabricRegex = /fabric/i
+const OOMRegex = /# There is insufficient memory for the Java Runtime Environment to continue/
 /**
  * @param {import("discord-api-types/v10").GatewayMessageCreateDispatchData} msg
  * @param {string} log
@@ -245,7 +248,7 @@ async function sendCrashLogBreakdown(msg, log, errors) {
 			suspectedCause = "The suspected cause of crashing is out of memory. You may have a memory leak!"
 		}
 
-	await passthrough.snow.channel.createMessage(msg.channel_id, {
+	await snow.channel.createMessage(msg.channel_id, {
 		content: "For ease of readability (especially on mobile), your log has been shortened to this quick breakdown (You should still send the full log in the future!)"
 			+ `\`\`\`\n${shouldSliceErrors ? mapped.slice(0, 1800) + "..." : mapped}\n\`\`\``,
 		embeds: [
@@ -274,6 +277,13 @@ async function sendCrashLogBreakdown(msg, log, errors) {
 	})
 }
 
+
+const easyModListRegex = /Loading (\d+) mods:/
+const modAndVersionRegex1 = /([^ ]+) (.+)/
+const fabricModsListCrashRegex = /Fabric Mods:/
+const forgeModsListCrashRegex = /Mod List:/
+const modAndVersionRegex2 = /([^:]+): [^\d]+(.+)/
+const modAndVersionRegex3 = /[^|]+\|[^|]+\|([^|]+)\|([^|]+)/
 /** @param {string} log */
 function getModList(log) {
 	/** @type {Array<{ modid: string, version: string }>} */
@@ -307,6 +317,8 @@ function getModList(log) {
 
 	return { mods, totalMods }
 }
+
+
 /**
  * @param {string} log
  * @param {RegExp} headerRegex

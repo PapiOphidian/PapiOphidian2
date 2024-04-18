@@ -1,5 +1,5 @@
 {
-  "name": "physmodbot",
+  "name": "papiophidian2",
   "version": "1.0.0",
   "description": "A bot for the Physics Mod server by Haubna",
   "main": "index.js",
@@ -8,9 +8,9 @@
   "license": "SEE LICENSE IN LICENSE",
   "private": true,
   "dependencies": {
-    "@types/node": "^20.12.2",
+    "@types/node": "^20.12.7",
     "cloudstorm": "^0.10.8",
-    "heatsync": "^2.5.1",
+    "heatsync": "^2.5.2",
     "snowtransfer": "^0.10.5"
   }
 }

@@ -10,8 +10,6 @@ const { CommandManager, ChatInputCommand } = require("./packages/commands")
 // @ts-ignore
 const sync = new Sync()
 
-sync.events.on("any", filename => console.log(`${filename} reloaded.`))
-
 /** @type {import("./config")} */
 const config = sync.require("./config.js")
 
