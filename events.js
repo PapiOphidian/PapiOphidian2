@@ -38,6 +38,12 @@ sync.addTemporaryListener(
 				break
 			}
 
+			case "MESSAGE_DELETE": {
+				utils.deleteCachedObject("message", data.d.id)
+				db.all("DELETE FROM starboard_map WHERE message_id =?", [data.d.id])
+				break
+			}
+
 			case "MESSAGE_REACTION_ADD": {
 				/** @type {import("discord-api-types/v10").APIMessage | null} */
 				const cached = utils.getCachedObject("message", data.d.message_id)
