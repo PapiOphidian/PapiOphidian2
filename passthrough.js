@@ -23,7 +23,7 @@ module.exports = {
 	config,
 	cloud: new Client(config.token, {
 		snowtransferInstance: snow,
-		intents: ["GUILD_MESSAGES", "MESSAGE_CONTENT"],
+		intents: ["GUILD_MESSAGES", "MESSAGE_CONTENT", "GUILD_MESSAGE_REACTIONS"],
 		ws: {
 			compress: true,
 			encoding: "etf"
@@ -40,5 +40,8 @@ module.exports = {
 			]
 		}
 	}),
-	sync
+	sync,
+	/** @type {import("sqlite").Database} */
+	// @ts-expect-error
+	db: null
 }

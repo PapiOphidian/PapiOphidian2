@@ -370,3 +370,80 @@ function getModsByTabWalking(log, headerRegex, entryRegex, modIDIndex, modVersio
 	}
 	return mods
 }
+
+/** @type {Record<string, Map<string, any>>} */
+const caches = {}
+
+/**
+ * @template T
+ * @param {string} namespace
+ * @param {string} key
+ * @returns {T | null}
+ */
+function getCachedObject(namespace, key) {
+	/** @type {T | null} */
+	const existing = caches[namespace]?.get(key)
+	return existing
+}
+module.exports.getCachedObject = getCachedObject
+
+/**
+ * @param {string} namespace
+ * @param {string} key
+ * @param {any} value
+ * @param {number} [expires] When this Object should be deleted in ms
+ */
+function setCachedObject(namespace, key, value, expires) {
+	if (!caches[namespace]) caches[namespace] = new Map()
+	caches[namespace].set(key, value)
+	if (expires !== undefined) setTimeout(deleteCachedObject, expires, namespace, key)
+}
+module.exports.setCachedObject = setCachedObject
+
+/**
+ * @param {string} namespace
+ * @param {string} key
+ */
+function deleteCachedObject(namespace, key) {
+	caches[namespace]?.delete(key)
+}
+module.exports.deleteCachedObject = deleteCachedObject
+
+/**
+ * @template {Array<any>} TArgs
+ * @template T
+ * @param {(...args: TArgs) => Promise<T>} func
+ * @param {string} namespace
+ * @param {string} key
+ * @param {number | undefined} deleteAfter
+ * @param {TArgs} targs
+ * @returns {Promise<Awaited<T> | null>}
+ */
+async function fetchObjectWithCache(func, namespace, key, deleteAfter, ...targs) {
+	/** @type {Awaited<T> | null} */
+	const existing = getCachedObject(namespace, key)
+	if (existing) return existing
+	const fetched = await func(...targs).catch(() => null)
+	if (!fetched) return null
+	setCachedObject(namespace, key, fetched, deleteAfter)
+	return fetched
+}
+module.exports.fetchObjectWithCache = fetchObjectWithCache
+
+/**
+ * A function to replace wildcard (%variable) strings with information from runtime
+ * @param {string} string The string from lang
+ * @param {{[variable: string]: any}} properties example: `{ "username": "PapiOphidian" }`
+ * @returns {string}
+ */
+function replace(string, properties = {}) {
+	let value = string.slice(0, string.length)
+	Object.keys(properties).forEach(item => {
+		let index
+		while ((index = value.indexOf(`%${item}`)) !== -1) {
+			value = value.slice(0, index) + properties[item] + value.slice(index + item.length + 1)
+		}
+	})
+	return value
+}
+module.exports.replace = replace
