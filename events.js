@@ -39,6 +39,8 @@ sync.addTemporaryListener(
 				/** @type {import("discord-api-types/v10").APIMessage | null} */
 				const cached = utils.getCachedObject("message", data.d.message_id)
 				if (cached) {
+					if (cached.author.id === data.d.user_id) return snow.channel.createMessage(data.d.channel_id, { content: `🚨🚨 <@${data.d.user_id}> IS A THOT AND SELF-STARRED THEIR MEME 🚨🚨` })
+
 					const existingReaction = cached.reactions?.find(r => r.emoji.name === data.d.emoji.name)
 					if (!existingReaction) {
 						if (!cached.reactions) cached.reactions = []
@@ -92,6 +94,7 @@ sync.addTemporaryListener(
 				/** @type {import("discord-api-types/v10").APIMessage | null} */
 				const cached = utils.getCachedObject("message", data.d.message_id)
 				if (cached) {
+					if (cached.author.id === data.d.user_id) return
 					const existingReaction = cached.reactions?.find(r => r.emoji.name === data.d.emoji.name)
 					if (existingReaction) existingReaction.count--
 				}
