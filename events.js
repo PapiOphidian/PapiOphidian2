@@ -232,7 +232,7 @@ async function starboardMessageHandler(mode, data) {
 		const existingReaction = message.reactions.find(r => r.emoji.name === (add ?? remove).emoji.name) // add ?? remove for type safety
 		if (!existingReaction && mode === "add") message.reactions.push({ count: 1, count_details: { burst: 0, normal: 0 }, me: false, me_burst: false, emoji: add.emoji, burst_colors: [] })
 
-		if (existingReaction) {
+		if (existingReaction && !!cached) { // the message was fetched after the fact. Don't modify
 			if (mode === "add") existingReaction.count++
 			else existingReaction.count--
 		}
