@@ -1,3 +1,6 @@
+const fs = require("fs")
+const path = require("path")
+
 const passthrough = require("./passthrough")
 
 const { sync, snow, cloud, db } = passthrough
@@ -9,6 +12,100 @@ const utils = sync.require("./utils")
 const getChannelMessage = snow.channel.getChannelMessage.bind(snow.channel)
 
 const starboardContentFormat = "%emoji %reactions %jump"
+
+// [Mod, Admin, Helper]
+const physModGoodRoles = ["947414444550549515", "673969281444216834", "1062898572686798960"]
+// [Staff]
+const mumsHouseGoodRoles = ["297202820162125824"]
+const physModGuildID = "231062298008092673"
+const mumsHouseGuildID = "214249708711837696"
+/** @type {Record<string, string>} */
+const reportChannelMap = {
+	// Physics Mod: admin-messages
+	[physModGuildID]: "934909491613421598",
+	// Mum's House: 4k_cctv
+	[mumsHouseGuildID]: "300752762973585418"
+}
+
+/** @type {Parameters<typeof utils.checkTriggers>["1"]} */
+const triggerMap = {
+	"scams": {
+		ignoreRoles: [...physModGoodRoles, ...mumsHouseGoodRoles],
+		matchers: [/50/, /gift/i, /(?:https?:\/\/)?discord\.gg\/\w+/],
+		test(positions) {
+			return utils.buildCase(positions, -1, 0, 1) // steam scam
+				|| utils.buildCase(positions, -1, 2) // discord link (possibly nsfw)
+		},
+		async trigger(msg) {
+			if (!msg.guild_id) return
+			const timeout = new Date()
+			timeout.setDate(timeout.getDate() + 7) // 1 week timeout
+			const cont = await Promise.all([
+				snow.channel.deleteMessage(msg.channel_id, msg.id, "scamming"),
+				snow.guild.updateGuildMember(msg.guild_id, msg.author.id, {
+					communication_disabled_until: timeout.toISOString()
+				})
+			]).then(() => true).catch(() => false)
+
+			if (!cont) {
+				console.log(`Failed to timeout user ${msg.author.username} (${msg.author.id}) for possible scam\n\n${msg.content}`)
+				return true
+			}
+
+			const channel = reportChannelMap[msg.guild_id]
+			if (!channel) return
+
+			snow.channel.createMessage(channel, { content: `Timed out <@${msg.author.id}> for scamming.\n\`\`\`\n${msg.content}\`\`\`` })
+		}
+	},
+	"phys_download": {
+		guild: physModGuildID,
+		matchers: [/how /i, / get /i, / download /i, / ?physics/i, / pro/i, /buy/i, /patreon /i, / tier/i],
+		test(positions) {
+			return utils.buildCase(positions, 15, 0, 1, 3) // how get physics
+				|| utils.buildCase(positions, 15, 0, 1, 4) // how get pro
+				|| utils.buildCase(positions, 15, 0, 2, 3) // how download physics
+				|| utils.buildCase(positions, 15, 0, 2, 4) // how download pro
+				|| utils.buildCase(positions, 15, 1, 4) // get pro
+				|| utils.buildCase(positions, 15, 2, 4) // download pro
+				|| utils.buildCase(positions, 15, 5, 4) // buy pro
+				|| utils.buildCase(positions, 10, 6, 7) // patreon tier
+				|| utils.buildCase(positions, 10, 0, 5) // how buy
+		},
+		trigger(msg) {
+			snow.channel.createMessage(msg.channel_id, {
+				content: "Here's a video on how to download physics mod pro! The downloads are only through patreon and Ko-Fi, but you don't *have* to pay.\nSupport is always appreciated however!",
+				files: [{
+					name: "pysiksmodtutorial.mp4",
+					file: fs.createReadStream(path.join(__dirname, "./videos/download.mp4"))
+				}],
+				message_reference: {
+					message_id: msg.id,
+					channel_id: msg.channel_id,
+					guild_id: msg.guild_id
+				}
+			})
+		}
+	},
+	"phys_pojav": {
+		guild: physModGuildID,
+		matchers: [/work/i, / with /i, / ?pojav/i],
+		test(positions) {
+			return utils.buildCase(positions, 15, 0, 1, 2) // work with pojav
+				|| utils.buildCase(positions, 15, 2, 0) // pojav work
+		},
+		trigger(msg) {
+			snow.channel.createMessage(msg.channel_id, {
+				content: "Physics Mod does not work with Pojav. No efforts are currently being made to make Physics Mod work with Pojav or any other launcher made for ARM based CPUs. If your platform supports x86 instruction emulation/translation, use that.",
+				message_reference: {
+					message_id: msg.id,
+					channel_id: msg.channel_id,
+					guild_id: msg.guild_id
+				}
+			})
+		}
+	}
+}
 
 sync.addTemporaryListener(sync.events, "any", file => console.log(`${file} reloaded`))
 sync.addTemporaryListener(snow.requestHandler, "requestError", console.error)
@@ -30,7 +127,7 @@ sync.addTemporaryListener(
 
 				starboardMessageHandler("create", data.d)
 
-				if (utils.checkTriggers(data.d)) return
+				if (utils.checkTriggers(data.d, triggerMap)) return
 				if (await utils.checkCrashLog(data.d)) return
 				break
 			}
