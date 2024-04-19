@@ -227,7 +227,7 @@ async function starboardMessageHandler(mode, data) {
 		if (sb.emoji !== (add ?? remove).emoji.name) return
 	}
 
-	if (mode === "add" && message.author.id === userID) return snow.channel.createMessage(channelID, { content: `🚨🚨 <@${userID}> IS A THOT AND SELF-STARRED THEIR MEME 🚨🚨` })
+	if (mode === "add" && message.author.id === userID) snow.channel.createMessage(channelID, { content: `🚨🚨 <@${userID}> IS A THOT AND SELF-STARRED THEIR MEME 🚨🚨` })
 	if (mode === "add" || mode === "remove") {
 		const existingReaction = message.reactions.find(r => r.emoji.name === (add ?? remove).emoji.name) // add ?? remove for type safety
 		if (!existingReaction && mode === "add") message.reactions.push({ count: 1, count_details: { burst: 0, normal: 0 }, me: false, me_burst: false, emoji: add.emoji, burst_colors: [] })
