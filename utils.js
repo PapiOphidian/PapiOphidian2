@@ -1,5 +1,5 @@
 const passthrough = require("./passthrough")
-const { snow } = passthrough
+const { snow, caches } = passthrough
 
 
 /** @param {number} index */
@@ -280,9 +280,6 @@ function getModsByTabWalking(log, headerRegex, entryRegex, modIDIndex, modVersio
 	}
 	return mods
 }
-
-/** @type {Record<string, Map<string, any>>} */
-const caches = {}
 
 /**
  * @template T

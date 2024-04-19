@@ -43,5 +43,7 @@ module.exports = {
 	sync,
 	/** @type {import("sqlite").Database} */
 	// @ts-expect-error
-	db: null
+	db: null,
+	/** @type {Record<string, Map<string, any>>} */
+	caches: {}
 }
