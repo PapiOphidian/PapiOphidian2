@@ -158,6 +158,9 @@ sync.addTemporaryListener(
 	}
 )
 
+/** @type {Set<string>} */
+const deferedChanges = new Set()
+
 /**
  * For some reason keyof <RecordHere> doesn't work so this is necessary
  * @template T
@@ -218,7 +221,7 @@ async function starboardMessageHandler(mode, data) {
 
 	if (mode === "update" && cached) Object.assign(cached, update)
 
-	const message = cached ?? await utils.fetchObjectWithCache(getChannelMessage, "message", messageID, 1000 * 60 * 60 * 6, channelID, messageID)
+	const message = cached ?? await utils.fetchObjectWithCache(getChannelMessage, "message", messageID, 1000 * 60 * 60 * 6, channelID, messageID).catch(() => void 0)
 	if (!message) return
 	if (!message.reactions) message.reactions = []
 
@@ -227,7 +230,7 @@ async function starboardMessageHandler(mode, data) {
 		if (sb.emoji !== (add ?? remove).emoji.name) return
 	}
 
-	if (mode === "add" && message.author.id === userID) snow.channel.createMessage(channelID, { content: `🚨🚨 <@${userID}> IS A THOT AND SELF-STARRED THEIR MEME 🚨🚨` })
+	if (mode === "add" && message.author.id === userID) snow.channel.createMessage(channelID, { content: `🚨🚨 <@${userID}> IS A THOT AND SELF-STARRED THEIR MEME 🚨🚨` }).catch(() => void 0)
 	if (mode === "add" || mode === "remove") {
 		const existingReaction = message.reactions.find(r => r.emoji.name === (add ?? remove).emoji.name) // add ?? remove for type safety
 		if (!existingReaction && mode === "add") message.reactions.push({ count: 1, count_details: { burst: 0, normal: 0 }, me: false, me_burst: false, emoji: add.emoji, burst_colors: [] })
@@ -237,6 +240,8 @@ async function starboardMessageHandler(mode, data) {
 			else existingReaction.count--
 		}
 	}
+
+	if (deferedChanges.has(messageID)) return
 
 	const reaction = message.reactions.find(r => r.emoji.name === sb.emoji)
 	if (!reaction) return
@@ -260,16 +265,25 @@ async function starboardMessageHandler(mode, data) {
 
 	/** @type {DBStarboardMap | undefined} */
 	const existingPost = await db.get("SELECT * FROM starboard_map WHERE message_id =?", [messageID])
-	const content = utils.replace(starboardContentFormat, { "emoji": sb.emoji, "reactions": reaction.count, "jump": `https://discord.com/channels/${guildID}/${channelID}/${messageID}` })
 
 	if (!existingPost) {
 		const instantPromote = !!sb.instant_promote_role_ids?.split(",").find(r => add.member?.roles.includes(r))
 		if (reaction.count >= sb.min || instantPromote) {
+			const content = utils.replace(starboardContentFormat, { "emoji": sb.emoji, "reactions": reaction.count, "jump": `https://discord.com/channels/${guildID}/${channelID}/${messageID}` })
 			const result = await snow.channel.createMessage(sb.channel_id, { content, embeds: [embed] })
 			db.all("INSERT INTO starboard_map (message_id, sb_message_id) VALUES (?, ?)", [message.id, result.id])
-			return
 		}
-	} else snow.channel.editMessage(sb.channel_id, existingPost.sb_message_id, { content, embeds: [embed] })
+	} else {
+		deferedChanges.add(messageID)
+		setTimeout(() => {
+			const reactionUpToDate = message.reactions?.find(r => r.emoji.name === sb.emoji)
+			if (reactionUpToDate) {
+				const content = utils.replace(starboardContentFormat, { "emoji": sb.emoji, "reactions": reactionUpToDate.count, "jump": `https://discord.com/channels/${guildID}/${channelID}/${messageID}` })
+				snow.channel.editMessage(sb.channel_id, existingPost.sb_message_id, { content, embeds: [embed] }).catch(() => void 0)
+			}
+			deferedChanges.delete(messageID)
+		}, 5000)
+	}
 }
 
 /**
