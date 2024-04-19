@@ -127,7 +127,7 @@ sync.addTemporaryListener(
 					if (!reaction) return
 
 					const content = utils.replace(starboardContentFormat, { "emoji": sb.emoji, "reactions": reaction.count, "jump": `https://discord.com/channels/${data.d.guild_id}/${data.d.channel_id}/${data.d.message_id}` })
-					snow.channel.editMessage(sb.channel_id, existingPost.message_id, { content })
+					snow.channel.editMessage(sb.channel_id, existingPost.sb_message_id, { content })
 				}
 				break
 			}
