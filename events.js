@@ -31,10 +31,11 @@ const reportChannelMap = {
 const triggerMap = {
 	"scams": {
 		ignoreRoles: [...physModGoodRoles, ...mumsHouseGoodRoles],
-		matchers: [/50/, /gift/i, /(?:https?:\/\/)?discord\.gg\/\w+/],
+		matchers: [/50/, /steam/i, /gift/i, /(?:https?:\/\/)?discord\.gg\/\w+/],
 		test(positions) {
-			return utils.buildCase(positions, -1, 0, 1) // steam scam
-				|| utils.buildCase(positions, -1, 2) // discord link (possibly nsfw)
+			return utils.buildCase(positions, -1, 0, 1) // 50 steam
+				|| utils.buildCase(positions, -1, 0, 2) // 50 gift
+				|| utils.buildCase(positions, -1, 3) // discord link (possibly nsfw)
 		},
 		async trigger(msg) {
 			if (!msg.guild_id) return
