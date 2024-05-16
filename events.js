@@ -253,6 +253,7 @@ async function starboardMessageHandler(mode, data) {
 	const embeddedContentToUse = message.attachments.length
 		? message.attachments[0].url
 		: message.embeds.find(e => e.thumbnail?.url)?.thumbnail?.url
+			?? message.embeds.find(e => e.video?.url)?.video?.url
 
 	/** @type {"image" | "video" | undefined} */
 	let key
