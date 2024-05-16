@@ -26,6 +26,9 @@ const reportChannelMap = {
 	// Mum's House: 4k_cctv
 	[mumsHouseGuildID]: "300752762973585418"
 }
+const mimetypeRegex = /\.(\w+)$/
+const imageMimes = new Set(["png", "gif", "jpg", "jpeg", "webp"])
+const videoMimes = new Set(["mp4", "mov", "webm"])
 
 /** @type {Parameters<typeof utils.checkTriggers>["1"]} */
 const triggerMap = {
@@ -247,7 +250,22 @@ async function starboardMessageHandler(mode, data) {
 	const reaction = message.reactions.find(r => r.emoji.name === sb.emoji)
 	if (!reaction) return
 
-	const existingEmbedFromMessage = message.embeds.find(e => e.thumbnail?.url)
+	const embeddedContentToUse = message.attachments.length
+		? message.attachments[0].url
+		: message.embeds.find(e => e.thumbnail?.url)?.thumbnail?.url
+
+	/** @type {"image" | "video" | undefined} */
+	let key
+
+	if (embeddedContentToUse) {
+		const url = new URL(embeddedContentToUse)
+		const mimeMatch = mimetypeRegex.exec(url.pathname)
+		if (mimeMatch) {
+			const mime = mimeMatch[1].toLowerCase()
+			if (imageMimes.has(mime)) key = "image"
+			else if (videoMimes.has(mime)) key = "video"
+		}
+	}
 
 	/** @type {import("discord-api-types/v10").APIEmbed} */
 	const embed = {
@@ -256,13 +274,10 @@ async function starboardMessageHandler(mode, data) {
 		},
 		description: message.content.length
 			? message.content.slice(0, 1999)
-			: undefined,
-		image: message.attachments.length
-			? { url: message.attachments[0].url, proxy_url: message.attachments[0].proxy_url }
-			: existingEmbedFromMessage?.thumbnail
-				? { url: existingEmbedFromMessage.thumbnail.url, proxy_url: existingEmbedFromMessage.thumbnail.proxy_url } // in the case of message updates with embeds from users
-				: undefined
+			: undefined
 	}
+
+	if (key && embeddedContentToUse) embed[key] = { url: embeddedContentToUse }
 
 	/** @type {DBStarboardMap | undefined} */
 	const existingPost = await db.get("SELECT * FROM starboard_map WHERE message_id =?", [messageID])
