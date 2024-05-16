@@ -39,7 +39,7 @@ module.exports.buildCase = buildCase
 function checkTriggers(msg, triggerMap) {
 	for (const entry of Object.values(triggerMap)) {
 		if (msg.guild_id && entry.guild && entry.guild !== msg.guild_id) continue
-		if (entry.ignoreRoles?.find(r => msg.member && msg.member.roles.includes(r))) continue
+		if (entry.ignoreRoles?.find(r => msg.member?.roles.includes(r))) continue
 		const positions = entry.matchers.map(matcher => {
 			const match = matcher.exec(msg.content)
 			return match?.index ?? -1
@@ -354,3 +354,8 @@ function replace(string, properties = {}) {
 	return value
 }
 module.exports.replace = replace
+
+/**
+ * @template T
+ * @typedef {T extends Array<infer I> ? I : never} UnpackArray
+ */

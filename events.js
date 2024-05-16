@@ -247,7 +247,7 @@ async function starboardMessageHandler(mode, data) {
 	const reaction = message.reactions.find(r => r.emoji.name === sb.emoji)
 	if (!reaction) return
 
-	const existingEmbedFromMessage = message.embeds.find(e => !!e.image?.url)
+	const existingEmbedFromMessage = message.embeds.find(e => e.thumbnail?.url)
 
 	/** @type {import("discord-api-types/v10").APIEmbed} */
 	const embed = {
@@ -259,8 +259,8 @@ async function starboardMessageHandler(mode, data) {
 			: undefined,
 		image: message.attachments.length
 			? { url: message.attachments[0].url, proxy_url: message.attachments[0].proxy_url }
-			: existingEmbedFromMessage?.image
-				? { url: existingEmbedFromMessage.image.url, proxy_url: existingEmbedFromMessage.image.proxy_url } // in the case of message updates with embeds from users
+			: existingEmbedFromMessage?.thumbnail
+				? { url: existingEmbedFromMessage.thumbnail.url, proxy_url: existingEmbedFromMessage.thumbnail.proxy_url } // in the case of message updates with embeds from users
 				: undefined
 	}
 
