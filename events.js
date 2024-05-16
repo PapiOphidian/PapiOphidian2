@@ -277,7 +277,10 @@ async function starboardMessageHandler(mode, data) {
 			: undefined
 	}
 
-	if (key && embeddedContentToUse) embed[key] = { url: embeddedContentToUse }
+	if (key && embeddedContentToUse) {
+		if (key === "video") embed.image = { url: "https://b.catgirlsare.sexy/4W4iqLSlAOWw.png" } // Discord doesn't allow video embeds
+		else embed[key] = { url: embeddedContentToUse }
+	}
 
 	/** @type {DBStarboardMap | undefined} */
 	const existingPost = await db.get("SELECT * FROM starboard_map WHERE message_id =?", [messageID])
