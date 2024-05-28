@@ -78,7 +78,7 @@ const triggerMap = {
 		},
 		trigger(msg) {
 			snow.channel.createMessage(msg.channel_id, {
-				content: "Here's a video on how to download physics mod pro! The downloads are only through patreon and Ko-Fi, but you don't *have* to pay.\nSupport is always appreciated however!",
+				content: "Here's a video on how to download physics mod pro! The downloads are only through [patreon](https://patreon.com/Haubna) and [Ko-Fi](https://ko-fi.com/haubna), but you don't *have* to pay.\nSupport is always appreciated however!",
 				files: [{
 					name: "pysiksmodtutorial.mp4",
 					file: fs.createReadStream(path.join(__dirname, "./videos/download.mp4"))
@@ -107,6 +107,16 @@ const triggerMap = {
 					guild_id: msg.guild_id
 				}
 			})
+		}
+	},
+	"phys_bump": {
+		guild: physModGuildID,
+		matchers: [/^bump$/i],
+		test(positions) {
+			return positions[0] !== -1
+		},
+		trigger(msg) {
+			snow.channel.deleteMessage(msg.channel_id, msg.id)
 		}
 	}
 }
