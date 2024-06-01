@@ -120,8 +120,8 @@ const triggerMap = {
 		}
 	}
 }
+module.exports.triggerMap = triggerMap
 
-sync.addTemporaryListener(sync.events, "any", file => console.log(`${file} reloaded`))
 sync.addTemporaryListener(snow.requestHandler, "requestError", console.error)
 sync.addTemporaryListener(
 	cloud,
@@ -182,24 +182,27 @@ const deferedChanges = new Set()
  */
 
 /**
- * @template {{
+ * @typedef {{
  * 	"create": import("discord-api-types/v10").GatewayMessageCreateDispatchData,
  * 	"update": import("discord-api-types/v10").GatewayMessageUpdateDispatchData,
  * 	"add": import("discord-api-types/v10").GatewayMessageReactionAddDispatchData,
  * 	"remove": import("discord-api-types/v10").GatewayMessageReactionRemoveDispatchData
- * }} T
- * @template {RKeys<T>} D
+ * }} StarboardHandlerDataMap
+ */
+
+/**
+ * @template {RKeys<StarboardHandlerDataMap>} D
  * @param {D} mode
- * @param {T[RKeys<T>]} data
+ * @param {StarboardHandlerDataMap[RKeys<StarboardHandlerDataMap>]} data
  */
 async function starboardMessageHandler(mode, data) {
-	/** @type {T["create"]} */ // @ts-ignore
+	/** @type {StarboardHandlerDataMap["create"]} */ // @ts-ignore
 	const create = data,
-	/** @type {T["update"]} */ // @ts-ignore
+	/** @type {StarboardHandlerDataMap["update"]} */ // @ts-ignore
 	update = data,
-	/** @type {T["add"]} */ // @ts-ignore
+	/** @type {StarboardHandlerDataMap["add"]} */ // @ts-ignore
 	add = data,
-	/** @type {T["remove"]} */ // @ts-ignore
+	/** @type {StarboardHandlerDataMap["remove"]} */ // @ts-ignore
 	remove = data // yes this is necessary. Type narrowing wouldn't work
 
 	let guildID, channelID, messageID, userID

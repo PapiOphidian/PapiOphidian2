@@ -22,5 +22,7 @@ passthrough.cloud.on("error", console.error)
 	])
 })()
 
+passthrough.sync.events.on("any", file => console.log(`${file} reloaded`))
+
 process.on("uncaughtException", console.error)
 process.on("unhandledRejection", console.error)
