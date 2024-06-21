@@ -15,10 +15,14 @@ const starboardContentFormat = "%emoji %reactions %jump"
 
 // [Mod, Admin, Helper]
 const physModGoodRoles = ["947414444550549515", "673969281444216834", "1062898572686798960"]
+module.exports.physModGoodRoles = physModGoodRoles
 // [Staff]
 const mumsHouseGoodRoles = ["297202820162125824"]
+module.exports.mumsHouseGoodRoles = mumsHouseGoodRoles
 const physModGuildID = "231062298008092673"
+module.exports.physModGuildID = physModGuildID
 const mumsHouseGuildID = "214249708711837696"
+module.exports.mumsHouseGuildId = mumsHouseGuildID
 /** @type {Record<string, string>} */
 const reportChannelMap = {
 	// Physics Mod: admin-messages
@@ -26,6 +30,7 @@ const reportChannelMap = {
 	// Mum's House: 4k_cctv
 	[mumsHouseGuildID]: "300752762973585418"
 }
+module.exports.reportChannelMap = reportChannelMap
 const mimetypeRegex = /\.(\w+)$/
 const imageMimes = new Set(["png", "gif", "jpg", "jpeg", "webp"])
 const videoMimes = new Set(["mp4", "mov", "webm"])

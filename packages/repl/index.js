@@ -1,0 +1,3 @@
+var l=Object.defineProperty;var r=(t,e)=>l(t,"name",{value:e,configurable:!0});var repl=require("repl"),util=require("util"),REPLProvider=class{constructor(t){this.context=t;let e=repl.start({prompt:"",eval:this.customEval,writer:r(i=>i,"writer")});Object.assign(e.context,t),this.repl=e}static{r(this,"REPLProvider")}repl;async customEval(input,_context,_filename,callback){let depth=0;if(input===`exit
+`)return process.exit();if(input.startsWith(":")){let t=input.split(" ")[0];depth=+t.slice(1),input=input.slice(t.length+1)}let result;try{result=await eval(input);let output=util.inspect(result,!1,depth,!0);return void callback(null,output)}catch(t){return void callback(null,util.inspect(t,!0,100,!0))}}};module.exports=REPLProvider;
+//# sourceMappingURL=index.js.map

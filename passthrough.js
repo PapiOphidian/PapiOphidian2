@@ -4,10 +4,8 @@ const Sync = require("heatsync")
 
 const { PresenceUpdateStatus } = require("discord-api-types/v10")
 
-const { CommandManager, ChatInputCommand } = require("./packages/commands")
+const { CommandManager, ChatInputCommand, ContextMenuCommand } = require("./packages/commands")
 
-/** @type {InstanceType<typeof import("heatsync").default>} */
-// @ts-ignore
 const sync = new Sync()
 
 /** @type {import("./config")} */
@@ -18,7 +16,9 @@ const snow = new SnowTransfer(config.token, {
 })
 
 module.exports = {
-	commands: new CommandManager(cmd => [new ChatInputCommand(cmd)]),
+	/** @type {CommandManager<[ChatInputCommand | ContextMenuCommand]>} */
+	// @ts-expect-error root doesnt type narrow from .data.type
+	commands: new CommandManager(cmd => [cmd.data.type === 1 ? new ChatInputCommand(cmd) : new ContextMenuCommand(cmd)]),
 	snow,
 	config,
 	cloud: new Client(config.token, {

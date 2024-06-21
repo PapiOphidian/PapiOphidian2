@@ -1,18 +1,19 @@
-import { APIChatInputApplicationCommandInteraction, APIMessageComponentInteraction, APIUser, APIInteractionGuildMember, LocaleString, APIInteractionDataResolvedGuildMember, APIRole, APIInteractionDataResolvedChannel, APIMessage, APIAttachment, APIChatInputApplicationCommandInteractionData, APIApplicationCommandInteractionDataOption, APIApplicationCommandInteractionDataBasicOption, APIApplicationCommandOption } from 'discord-api-types/v10';
+import { APIUser, APIInteractionGuildMember, APIChatInputApplicationCommandInteraction, LocaleString, APIInteractionDataResolvedGuildMember, APIRole, APIInteractionDataResolvedChannel, APIMessage, APIAttachment, APIChatInputApplicationCommandInteractionData, APIApplicationCommandInteractionDataOption, APIApplicationCommandInteractionDataBasicOption, APIContextMenuInteraction, APIContextMenuInteractionData, APIApplicationCommandOption } from 'discord-api-types/v10';
 import { SnowTransfer } from 'snowtransfer';
 
-declare class ChatInputCommand<T extends APIChatInputApplicationCommandInteraction | APIMessageComponentInteraction = APIChatInputApplicationCommandInteraction> {
+declare class ChatInputCommand {
     author: APIUser;
     member: APIInteractionGuildMember | null;
     guild_id: string | null;
     channel: APIChatInputApplicationCommandInteraction["channel"];
     locale: LocaleString;
     guild_locale: LocaleString | null;
-    data: T extends APIChatInputApplicationCommandInteraction ? ChatInputCommandData : never;
+    data: ChatInputCommandData;
     id: string;
     application_id: string;
     token: string;
-    constructor(interaction: T);
+    app_permissions: string;
+    constructor(interaction: APIChatInputApplicationCommandInteraction);
 }
 declare class ChatInputCommandData {
     users: Map<string, APIUser>;
@@ -32,6 +33,28 @@ declare class CommandOption {
     asNumber(): number | null;
     asBoolean(): boolean | null;
 }
+declare class ContextMenuCommand {
+    author: APIUser;
+    member: APIInteractionGuildMember | null;
+    guild_id: string | null;
+    channel: APIContextMenuInteraction["channel"];
+    locale: LocaleString;
+    guild_locale: LocaleString | null;
+    data: ContextMenuCommandData;
+    target: string;
+    id: string;
+    application_id: string;
+    token: string;
+    app_permissions: string;
+    constructor(interaction: APIContextMenuInteraction);
+}
+declare class ContextMenuCommandData {
+    target_id: string;
+    users: Map<string, APIUser>;
+    members: Map<string, APIInteractionDataResolvedGuildMember>;
+    messages: Map<string, APIMessage>;
+    constructor(data: APIContextMenuInteractionData);
+}
 declare class CommandManager<Params extends Array<unknown>> {
     paramGetter: (command: APIChatInputApplicationCommandInteraction) => Params;
     errorHandler?: ((error: unknown) => unknown) | undefined;
@@ -44,14 +67,16 @@ declare class CommandManager<Params extends Array<unknown>> {
 }
 type Command<Params extends Array<unknown>> = {
     name: string;
+    type?: 1 | 2 | 3;
     integration_types?: Array<number>;
     contexts?: Array<number>;
     options?: Array<APIApplicationCommandOption>;
     description: string;
     category: string;
+    guild_ids?: Array<string>;
     examples?: Array<string>;
     order?: number;
     process(...args: Params): unknown;
 };
 
-export { ChatInputCommand, ChatInputCommandData, type Command, CommandManager, CommandOption };
+export { ChatInputCommand, ChatInputCommandData, type Command, CommandManager, CommandOption, ContextMenuCommand, ContextMenuCommandData };

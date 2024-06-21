@@ -1,5 +1,8 @@
+// @ts-check
+
 const sqlite = require("sqlite")
 const { Database } = require("sqlite3")
+const REPLProvider = require("./packages/repl")
 
 const passthrough = require("./passthrough")
 
@@ -20,6 +23,11 @@ passthrough.cloud.on("error", console.error)
 		"./events.js",
 		"./utils.js"
 	])
+
+	/** @type {typeof import("./replfunctions")} */
+	const replfunctions = passthrough.sync.require("./replfunctions")
+
+	void new REPLProvider({ passthrough, replfunctions })
 })()
 
 passthrough.sync.events.on("any", file => console.log(`${file} reloaded`))
