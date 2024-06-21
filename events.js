@@ -116,7 +116,7 @@ const triggerMap = {
 	},
 	"phys_bump": {
 		guild: physModGuildID,
-		matchers: [/^bump$/i],
+		matchers: [/^.?bump.?$/i],
 		test(positions) {
 			return positions[0] !== -1
 		},
