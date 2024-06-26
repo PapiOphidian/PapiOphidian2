@@ -166,12 +166,12 @@ clean-stack@^2.0.0:
   resolved "https://registry.yarnpkg.com/clean-stack/-/clean-stack-2.2.0.tgz#ee8472dbb129e727b31e8a10a427dee9dfe4008b"
   integrity sha512-4diC9HaTE+KRAMWhDhrGOECgWZxoevMc5TlkObMqNSsVU62PYzXZ/SMTjzyGAFF1YusgxGcSWTEXBhp0CPwQ1A==
 
-cloudstorm@^0.10.8:
-  version "0.10.8"
-  resolved "https://registry.yarnpkg.com/cloudstorm/-/cloudstorm-0.10.8.tgz#e156dd6af321596274b62500fa55aed47ea15574"
-  integrity sha512-ZVy4HbEiNRyRO0p0d0DtIMoVCg8rxoRpA07hflq2MQpPpmFpostkF7nd+zOsQ+piAfhUdvPsgtQLHdGFmTZVPQ==
+cloudstorm@^0.10.9:
+  version "0.10.9"
+  resolved "https://registry.yarnpkg.com/cloudstorm/-/cloudstorm-0.10.9.tgz#e0f68251ce7369ba5087a966c75252680d3bf0f9"
+  integrity sha512-LLWCDn8CORM9iCFyWq3sIRK/7zJU7Jw14wLit3p5zWlD9Ihixv2nqjBbnWqEuq97zWh/xA+abACz2CvTVBlIWQ==
   dependencies:
-    discord-api-types "^0.37.70"
+    discord-api-types "^0.37.90"
     snowtransfer "^0.10.5"
 
 color-support@^1.1.3:
@@ -222,6 +222,11 @@ discord-api-types@^0.37.70:
   version "0.37.77"
   resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.37.77.tgz#1d8b984e941fd1e6d3409d0cc4616cecac84f3a3"
   integrity sha512-AkEn9nZA5w/XJ8wzKzlpx3X+MToQCowKahftF1+KYnMWnuglCrVRojy1XlIWX8Frgp1v8INceGKpvDkbvMLJ4g==
+
+discord-api-types@^0.37.90:
+  version "0.37.90"
+  resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.37.90.tgz#84f78ba2de984364b8b6cbc5891be48f9539fa48"
+  integrity sha512-lpOJSGrqHuXoM4FV/2HtjoaJpCClGFHpRNIdZEW8zPINlsCHNSfIwA2EQ8dxeE6k1QhhTuM9ZlOGVYXoU7FLgA==
 
 emoji-regex@^8.0.0:
   version "8.0.0"
