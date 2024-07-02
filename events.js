@@ -234,6 +234,7 @@ async function starboardMessageHandler(mode, data) {
 			guildID = remove.guild_id; channelID = remove.channel_id; messageID = remove.message_id; userID = remove.user_id
 			break
 		case "update":
+			// @ts-expect-error
 			guildID = update.guild_id; channelID = update.channel_id; messageID = update.id; userID = update.member?.user?.id ?? update.author?.id
 			break
 		case "create":
