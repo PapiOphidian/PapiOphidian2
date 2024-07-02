@@ -35,6 +35,11 @@ const mimetypeRegex = /\.(\w+)$/
 const imageMimes = new Set(["png", "gif", "jpg", "jpeg", "webp"])
 const videoMimes = new Set(["mp4", "mov", "webm"])
 
+const physModGeneralID = "882927654007881778"
+const physModGameDevTalkID = "231062298008092673"
+
+const downloadProMessage = "Here's a video on how to download physics mod pro! The downloads are only through [Patreon](<https://patreon.com/Haubna>) and [Ko-Fi](<https://ko-fi.com/haubna>), but you don't *have* to pay.\nSupport is always appreciated however!"
+
 /** @type {Parameters<typeof utils.checkTriggers>["1"]} */
 const triggerMap = {
 	"scams": {
@@ -82,18 +87,27 @@ const triggerMap = {
 				|| utils.buildCase(positions, 10, 0, 5) // how buy
 		},
 		trigger(msg) {
-			snow.channel.createMessage(msg.channel_id, {
-				content: "Here's a video on how to download physics mod pro! The downloads are only through [patreon](<https://patreon.com/Haubna>) and [Ko-Fi](<https://ko-fi.com/haubna>), but you don't *have* to pay.\nSupport is always appreciated however!",
-				files: [{
-					name: "pysiksmodtutorial.mp4",
-					file: fs.createReadStream(path.join(__dirname, "./videos/download.mp4"))
-				}],
-				message_reference: {
-					message_id: msg.id,
-					channel_id: msg.channel_id,
-					guild_id: msg.guild_id
-				}
-			})
+			const file = {
+				name: "pysiksmodtutorial.mp4",
+				file: fs.createReadStream(path.join(__dirname, "./videos/download.mp4"))
+			}
+			if (msg.channel_id === physModGameDevTalkID) {
+				snow.channel.deleteMessage(msg.channel_id, msg.id)
+				snow.channel.createMessage(physModGeneralID, {
+					content: `<@${msg.author.id}> this is the channel you should ask for support about physics mod in. To answer your question:\n${downloadProMessage}`,
+					files: [file]
+				})
+			}	else {
+				snow.channel.createMessage(msg.channel_id, {
+					content: downloadProMessage,
+					files: [file],
+					message_reference: {
+						message_id: msg.id,
+						channel_id: msg.channel_id,
+						guild_id: msg.guild_id
+					}
+				})
+			}
 		}
 	},
 	"phys_pojav": {
