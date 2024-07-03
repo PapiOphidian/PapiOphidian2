@@ -150,7 +150,7 @@ async function sendCrashLogBreakdown(msg, log, errors) {
 		? `${modsInfo.mods.slice(0, indexReachingMods).map(m => `${m.modid}@${m.version}`).join(", ")}${indexReachingMods !== -1 ? ` and ${modsInfo.mods.length - (indexReachingMods + 1)} others` : ""}`
 		: "Unknown"
 
-	const physicsModVersion = modsInfo.mods.find(m => m.modid === "physicsmod")?.version ?? "Unknown"
+	const physicsModVersion = modsInfo.mods.find(m => m.modid === "physicsmod")?.version ?? (modsInfo.mods.length ? "Not present" : "Unknown")
 
 		const isOOM = OOMRegex.test(log)
 		let suspectedCause = ""
