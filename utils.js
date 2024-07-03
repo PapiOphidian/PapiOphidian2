@@ -73,7 +73,7 @@ async function checkCrashLog(msg) {
 module.exports.checkCrashLog = checkCrashLog
 
 
-const javaErrorFrameRegex = /[\t ]at ((?:\w+\.)[\w.[\]():~? $/\-+<>]+)/
+const javaErrorFrameRegex = /[\t ]at ((?:\w+\.)[\w.[\]():~? $/\-+<>%!/]+)/
 const exceptionHeadRegex = /((?:[\w.]+Exception: .+)|(?:Stacktrace:))/
 /** @param {string} str */
 function performCrashCheckOn(str) {
@@ -150,6 +150,8 @@ async function sendCrashLogBreakdown(msg, log, errors) {
 		? `${modsInfo.mods.slice(0, indexReachingMods).map(m => `${m.modid}@${m.version}`).join(", ")}${indexReachingMods !== -1 ? ` and ${modsInfo.mods.length - (indexReachingMods + 1)} others` : ""}`
 		: "Unknown"
 
+	const physicsModVersion = modsInfo.mods.find(m => m.modid === "physicsmod")?.version ?? "Unknown"
+
 		const isOOM = OOMRegex.test(log)
 		let suspectedCause = ""
 		let hasSuspected = false
@@ -171,6 +173,10 @@ async function sendCrashLogBreakdown(msg, log, errors) {
 					{
 						name: "Environment info:",
 						value: `Has OptiFine: ${hasOptifine}\nMod loader: ${isFML ? "Forge" : isFabric ? "Fabric" : "Other"} (Not always accurate)\nTotal mods: ${modsInfo.totalMods === 0 ? "Unknown" : modsInfo.totalMods}`
+					},
+					{
+						name: "Physics Mod version",
+						value: physicsModVersion
 					},
 					{
 						name: "Mods:",
