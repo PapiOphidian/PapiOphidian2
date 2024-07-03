@@ -143,7 +143,10 @@ async function sendCrashLogBreakdown(msg, log, errors) {
 	let indexReachingMods = -1
 	for (let i = 0; i < modsInfo.mods.length; i++) {
 		totalModsLength += modsInfo.mods[i].modid.length + modsInfo.mods[i].version.length + 3 // modid@version, and a space
-		if (totalModsLength >= 1000 && indexReachingMods === -1) indexReachingMods = i // leaves 24 characters for "and number others"
+		if (totalModsLength >= 1000 && indexReachingMods === -1) {
+			indexReachingMods = i // leaves 24 characters for "and number others"
+			break
+		}
 	}
 
 	const modsString = modsInfo.mods.length
