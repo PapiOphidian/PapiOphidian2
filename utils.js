@@ -155,13 +155,13 @@ async function sendCrashLogBreakdown(msg, log, errors) {
 
 	const physicsModVersion = modsInfo.mods.find(m => m.modid === "physicsmod")?.version ?? (modsInfo.mods.length ? "Not present" : "Unknown")
 
-		const isOOM = OOMRegex.test(log)
-		let suspectedCause = ""
-		let hasSuspected = false
-		if (isOOM) {
-			hasSuspected = true
-			suspectedCause = "The suspected cause of crashing is out of memory. You may have a memory leak!"
-		}
+	const isOOM = OOMRegex.test(log)
+	let suspectedCause = ""
+	let hasSuspected = false
+	if (isOOM) {
+		hasSuspected = true
+		suspectedCause = "The suspected cause of crashing is out of memory. You may have a memory leak!"
+	}
 
 	await snow.channel.createMessage(msg.channel_id, {
 		content: "For ease of readability (especially on mobile), your log has been shortened to this quick breakdown (You should still send the full log in the future!)"
