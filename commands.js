@@ -15,9 +15,8 @@ commands.assign([
 		/** @param {import("./packages/commands").ContextMenuCommand} cmd */
 		async process(cmd) {
 			await snow.interaction.deleteOriginalInteractionResponse(cmd.application_id, cmd.token)
-			/** @type {import("discord-api-types/v10").APIMessage} */
-			// @ts-expect-error
 			const message = cmd.data.messages.get(cmd.target)
+			if (!message) throw new Error("PANICK!")
 			events.triggerMap["phys_download"].trigger(message)
 		}
 	},
@@ -30,9 +29,8 @@ commands.assign([
 		/** @param {import("./packages/commands").ContextMenuCommand} cmd */
 		async process(cmd) {
 			await snow.interaction.deleteOriginalInteractionResponse(cmd.application_id, cmd.token)
-			/** @type {import("discord-api-types/v10").APIMessage} */
-			// @ts-expect-error
 			const message = cmd.data.messages.get(cmd.target)
+			if (!message) throw new Error("PANICK!")
 			events.triggerMap["phys_pojav"].trigger(message)
 		}
 	},

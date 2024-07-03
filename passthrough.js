@@ -20,7 +20,7 @@ const snow = new SnowTransfer(config.token, {
 module.exports = {
 	/** @type {CommandManager<[ChatInputCommand | ContextMenuCommand]>} */
 	// @ts-expect-error root doesnt type narrow from .data.type
-	commands: new CommandManager(cmd => [cmd.data.type === 1 ? new ChatInputCommand(cmd) : new ContextMenuCommand(cmd)]),
+	commands: new CommandManager(cmd => [cmd.data.type === 1 ? new ChatInputCommand(cmd) : new ContextMenuCommand(cmd)], console.error),
 	snow,
 	config,
 	cloud: new Client(config.token, {
