@@ -108,6 +108,7 @@ const clientBrandRegex = /Client brand changed to '([^']+)'/
 const optifineRegex = /\[optifine]/i
 const fabricRegex = /fabric/i
 const OOMRegex = /# There is insufficient memory for the Java Runtime Environment to continue/
+const defaultVersionPlaceholder = "unextractable"
 /**
  * @param {import("discord-api-types/v10").GatewayMessageCreateDispatchData} msg
  * @param {string} log
@@ -152,7 +153,7 @@ async function sendCrashLogBreakdown(msg, log, errors) {
 	let totalModsLength = 0
 	let indexReachingMods = -1
 	for (let i = 0; i < modsInfo.mods.length; i++) {
-		totalModsLength += modsInfo.mods[i].modid.length + modsInfo.mods[i].version.length + 3 // modid@version, and a space
+		totalModsLength += modsInfo.mods[i].modid.length + (modsInfo.mods[i].version === defaultVersionPlaceholder ? modsInfo.mods[i].version.length + 2 : modsInfo.mods[i].version.length + 3) // modid@version, and a space or just modid,
 		if (totalModsLength >= 1000 && indexReachingMods === -1) {
 			indexReachingMods = i // leaves 24 characters for "and number others"
 			break
@@ -160,10 +161,11 @@ async function sendCrashLogBreakdown(msg, log, errors) {
 	}
 
 	const modsString = modsInfo.mods.length
-		? `${modsInfo.mods.slice(0, indexReachingMods).map(m => `${m.modid}@${m.version}`).join(", ")}${indexReachingMods !== -1 ? ` and ${modsInfo.mods.length - (indexReachingMods + 1)} others` : ""}`
+		? `${modsInfo.mods.slice(0, indexReachingMods).map(m => m.version === defaultVersionPlaceholder ? m.modid : `${m.modid}@${m.version}`).join(", ")}${indexReachingMods !== -1 ? ` and ${modsInfo.mods.length - (indexReachingMods + 1)} others` : ""}`
 		: "Unknown"
 
-	const physicsModVersion = modsInfo.mods.find(m => m.modid === "physicsmod")?.version ?? (modsInfo.mods.length ? "Not present" : "Unknown")
+	const physModFound = modsInfo.mods.find(m => m.modid === "physicsmod" || m.modid.startsWith("physics-mod"))
+	const physicsModVersion = physModFound?.version ? (physModFound.version === defaultVersionPlaceholder ? physModFound.modid : physModFound.version) : (modsInfo.mods.length ? "Not present" : "Unknown")
 
 	const isOOM = OOMRegex.test(log)
 	let suspectedCause = ""
@@ -211,8 +213,10 @@ const easyModListRegex = /Loading (\d+) mods:/
 const modAndVersionRegex1 = /([^ ]+) (.+)/
 const fabricModsListCrashRegex = /Fabric Mods:/
 const forgeModsListCrashRegex = /Mod List:/
+const foundModFileRegex = /Found mod file "([^"]+)"/g
 const modAndVersionRegex2 = /([^:]+): [^\d]+(.+)/
 const modAndVersionRegex3 = /[^|]+\|[^|]+\|([^|]+)\|([^|]+)/
+const jarFileExtRegex = /\.jar$/
 /** @param {string} log */
 function getModList(log) {
 	/** @type {Array<{ modid: string, version: string }>} */
@@ -242,6 +246,13 @@ function getModList(log) {
 	if (!mods.length) {
 		mods.push(...getModsByTabWalking(log, forgeModsListCrashRegex, modAndVersionRegex3, 1, 2))
 		totalMods = mods.length
+	}
+
+	if (!mods.length) {
+		const files = log.matchAll(foundModFileRegex)
+		for (const file of files) {
+			mods.push({ modid: file[1].replace(jarFileExtRegex, ""), version: defaultVersionPlaceholder })
+		}
 	}
 
 	return { mods, totalMods }
