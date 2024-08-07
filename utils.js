@@ -253,6 +253,7 @@ function getModList(log) {
 		for (const file of files) {
 			mods.push({ modid: file[1].replace(jarFileExtRegex, ""), version: defaultVersionPlaceholder })
 		}
+		totalMods = mods.length
 	}
 
 	return { mods, totalMods }
