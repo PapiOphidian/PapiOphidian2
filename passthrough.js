@@ -47,5 +47,7 @@ module.exports = {
 	// @ts-expect-error
 	db: null,
 	/** @type {Record<string, Map<string, any>>} */
-	caches: {}
+	caches: {},
+	/** @type {Record<string, Promise<any>>} */
+	cachePromises: {}
 }

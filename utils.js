@@ -1,5 +1,5 @@
 const passthrough = require("./passthrough")
-const { snow, caches } = passthrough
+const { snow, caches, cachePromises } = passthrough
 
 
 /** @param {number} index */
@@ -360,7 +360,13 @@ async function fetchObjectWithCache(func, namespace, key, deleteAfter, ...targs)
 	/** @type {Awaited<T> | null} */
 	const existing = getCachedObject(namespace, key)
 	if (existing) return existing
-	const fetched = await func(...targs).catch(() => null)
+	const promiseCacheKey = `${namespace}.${key}`
+	const existingFetch = cachePromises[promiseCacheKey]
+	if (existingFetch !== undefined) return existingFetch
+	const prom = func(...targs).catch(() => null)
+	cachePromises[promiseCacheKey] = prom
+	const fetched = await prom
+	delete cachePromises[promiseCacheKey]
 	if (!fetched) return null
 	setCachedObject(namespace, key, fetched, deleteAfter)
 	return fetched
