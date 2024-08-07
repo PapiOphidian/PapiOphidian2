@@ -73,7 +73,7 @@ async function checkCrashLog(msg) {
 module.exports.checkCrashLog = checkCrashLog
 
 
-const javaErrorFrameRegex = /[\t ]at ((?:\w+\.)[\w.[\]():~? $/\-+<>%!/]+)/
+const javaErrorFrameRegex = /[\t ]at ((?:\w+\.)?[\w\.[\]():~? $/\-+<>%!/{},@]+)/
 const exceptionHeadRegex = /((?:[\w.]+Exception: .+)|(?:Stacktrace:))/
 /** @param {string} str */
 function performCrashCheckOn(str) {
@@ -104,6 +104,7 @@ function performCrashCheckOn(str) {
 }
 
 
+const clientBrandRegex = /Client brand changed to '([^']+)'/
 const optifineRegex = /\[optifine]/i
 const fabricRegex = /fabric/i
 const OOMRegex = /# There is insufficient memory for the Java Runtime Environment to continue/
@@ -114,8 +115,17 @@ const OOMRegex = /# There is insufficient memory for the Java Runtime Environmen
  */
 async function sendCrashLogBreakdown(msg, log, errors) {
 	const hasOptifine = optifineRegex.test(log)
-	const isFML = log.includes("minecraftforge") && !log.includes("fabricmc")
-	const isFabric = fabricRegex.test(log)
+	let estimatedBrand = "Other"
+	let estimated = true
+	const brand = clientBrandRegex.exec(log)
+	if (brand) {
+		estimatedBrand = brand[1][0].toUpperCase() + brand[1].slice(1).toLowerCase()
+		estimated = false
+	} else {
+		const isFML = log.includes("minecraftforge") && !log.includes("fabricmc")
+		const isFabric = fabricRegex.test(log)
+		estimatedBrand = isFML ? "Forge" : isFabric ? "Fabric" : estimatedBrand
+	}
 	/** @type {Array<{ appearances: number, frames: Array<string> }>} */
 	const deduped = []
 	for (const e of errors) {
@@ -175,7 +185,7 @@ async function sendCrashLogBreakdown(msg, log, errors) {
 					}] : []),
 					{
 						name: "Environment info:",
-						value: `Has OptiFine: ${hasOptifine}\nMod loader: ${isFML ? "Forge" : isFabric ? "Fabric" : "Other"} (Not always accurate)\nTotal mods: ${modsInfo.totalMods === 0 ? "Unknown" : modsInfo.totalMods}`
+						value: `Has OptiFine: ${hasOptifine}\nMod loader: ${estimatedBrand}${estimated ? " (Not always accurate)" : " (Definitely. Client branding changed)"}\nTotal mods: ${modsInfo.totalMods === 0 ? "Unknown" : modsInfo.totalMods}`
 					},
 					{
 						name: "Physics Mod version",
