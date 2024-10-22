@@ -44,13 +44,14 @@ const downloadProMessage = "Here's a video on how to download physics mod pro! T
 const triggerMap = {
 	"scams": {
 		ignoreRoles: [...physModGoodRoles, ...mumsHouseGoodRoles],
-		matchers: [/20/, /50/, /steam/i, /gift/i, /(?:https?:\/\/)?discord\.gg\/\w+/],
+		matchers: [/20/, /50/, /steam/i, /gift/i, /(?:https?:\/\/)?discord\.gg\/\w+/, /https?:\/\/t.me/],
 		test(positions) {
 			return utils.buildCase(positions, -1, 0, 2) // 20 steam
 				|| utils.buildCase(positions, -1, 0, 3) // 20 gift
 				|| utils.buildCase(positions, -1, 1, 2) // 50 steam
 				|| utils.buildCase(positions, -1, 1, 3) // 50 gift
 				|| utils.buildCase(positions, -1, 4) // discord link (possibly nsfw)
+				|| utils.buildCase(positions, -1, 5) // telegram short link
 		},
 		async trigger(msg) {
 			if (!msg.guild_id) return

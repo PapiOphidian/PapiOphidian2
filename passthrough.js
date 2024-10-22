@@ -1,7 +1,5 @@
 const { SnowTransfer } = require("snowtransfer")
 const { Client } = require("cloudstorm")
-/** @type {typeof import("heatsync")["default"]} */
-// @ts-ignore
 const Sync = require("heatsync")
 
 const { PresenceUpdateStatus } = require("discord-api-types/v10")
