@@ -50,6 +50,7 @@ const triggerMap = {
 				|| utils.buildCase(positions, 10, 0, 3) // 20 gift
 				|| utils.buildCase(positions, 10, 1, 2) // 50 steam
 				|| utils.buildCase(positions, 10, 1, 3) // 50 gift
+				|| utils.buildCase(positions, 10, 3, 1) // gift 50
 				|| utils.buildCase(positions, -1, 4) // discord link (possibly nsfw)
 				|| utils.buildCase(positions, -1, 5) // telegram short link
 		},
