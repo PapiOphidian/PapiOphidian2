@@ -8,14 +8,14 @@
   "license": "SEE LICENSE IN LICENSE",
   "private": true,
   "dependencies": {
-    "@types/node": "^22.7.7",
+    "@types/node": "^22.10.2",
     "cloudstorm": "^0.10.11",
     "heatsync": "^2.5.5",
-    "snowtransfer": "^0.10.7",
+    "snowtransfer": "^0.10.8",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
   },
   "resolutions": {
-    "discord-api-types": "0.37.103"
+    "discord-api-types": "0.37.111"
   }
 }

@@ -28,12 +28,12 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
-"@types/node@^22.7.7":
-  version "22.7.7"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.7.7.tgz#6cd9541c3dccb4f7e8b141b491443f4a1570e307"
-  integrity sha512-SRxCrrg9CL/y54aiMCG3edPKdprgMVGDXjA3gB8UmmBW5TcXzRUYAh8EWzTnSJFAd1rgImPELza+A3bJ+qxz8Q==
+"@types/node@^22.10.2":
+  version "22.10.2"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.10.2.tgz#a485426e6d1fdafc7b0d4c7b24e2c78182ddabb9"
+  integrity sha512-Xxr6BBRCAOQixvonOye19wnzyDiUtTeqldOOmj3CkeblonbccA12PFwlufvRdrpjXxqnmUaeiU5EOA+7s5diUQ==
   dependencies:
-    undici-types "~6.19.2"
+    undici-types "~6.20.0"
 
 abbrev@1:
   version "1.1.1"
@@ -218,10 +218,10 @@ detect-libc@^2.0.0:
   resolved "https://registry.yarnpkg.com/detect-libc/-/detect-libc-2.0.3.tgz#f0cd503b40f9939b894697d19ad50895e30cf700"
   integrity sha512-bwy0MGW55bG41VqxxypOsdSdGqLwXPI/focwgTYCFMbdUiBAxLg9CFzG08sz2aqzknwiX7Hkl0bQENjg8iLByw==
 
-discord-api-types@0.37.103, discord-api-types@^0.37.98:
-  version "0.37.103"
-  resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.37.103.tgz#215423355c6bd9780f367453b9f01d7731cbfb95"
-  integrity sha512-r+qitxXKe2l6KFw5odPdZSSqdEou+7eNC7BfbZ7mny5Me/K06wCTeKUMVeH/YsI9+4QQudskeQ307kr/7ppQ1A==
+discord-api-types@0.37.111, discord-api-types@^0.37.111, discord-api-types@^0.37.98:
+  version "0.37.111"
+  resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.37.111.tgz#f81d4b4181352fc497f9de7e6b6dd519756e5c3c"
+  integrity sha512-22O4/mjfcLaQ8bbJorGpzFThnjhd8/exQxFscP3fnyJPo9Fk9O5GkWDIremYbvuw4YiwMfssWFniIb/iAwRqTg==
 
 emoji-regex@^8.0.0:
   version "8.0.0"
@@ -742,13 +742,13 @@ smart-buffer@^4.2.0:
   resolved "https://registry.yarnpkg.com/smart-buffer/-/smart-buffer-4.2.0.tgz#6e1d71fa4f18c05f7d0ff216dd16a481d0e8d9ae"
   integrity sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==
 
-snowtransfer@^0.10.7:
-  version "0.10.7"
-  resolved "https://registry.yarnpkg.com/snowtransfer/-/snowtransfer-0.10.7.tgz#032fe7e28c86d83601415c6bc38bfddf0844528a"
-  integrity sha512-lXUYp6jOou0DI8uFl3Dh78KD1gVa3dNbUt2TK6RW39mHenAR6XpoPoydUNXCWvdxi6uGU6zQ1yNICZpKjF6wMA==
+snowtransfer@^0.10.7, snowtransfer@^0.10.8:
+  version "0.10.8"
+  resolved "https://registry.yarnpkg.com/snowtransfer/-/snowtransfer-0.10.8.tgz#5aa09aecac6d7e6b49978759defbd47d0d2b9cc2"
+  integrity sha512-w1/GrwMo1nKfovtIIu6O7pWywqgffu94BmlDwHMFPB2raeOhf34LlOQCP30Eqc+QQuCXfhol63Ez9eaDdRViOQ==
   dependencies:
-    discord-api-types "^0.37.98"
-    undici "^6.19.8"
+    discord-api-types "^0.37.111"
+    undici "^7.1.1"
 
 socks-proxy-agent@^6.0.0:
   version "6.2.1"
@@ -864,15 +864,15 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
-undici-types@~6.19.2:
-  version "6.19.8"
-  resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-6.19.8.tgz#35111c9d1437ab83a7cdc0abae2f26d88eda0a02"
-  integrity sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==
+undici-types@~6.20.0:
+  version "6.20.0"
+  resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-6.20.0.tgz#8171bf22c1f588d1554d55bf204bc624af388433"
+  integrity sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==
 
-undici@^6.19.8:
-  version "6.19.8"
-  resolved "https://registry.yarnpkg.com/undici/-/undici-6.19.8.tgz#002d7c8a28f8cc3a44ff33c3d4be4d85e15d40e1"
-  integrity sha512-U8uCCl2x9TK3WANvmBavymRzxbfFYG+tAu+fgx3zxQy3qdagQqBLwJVrdyO1TBfUXvfKveMKJZhpvUYoOjM+4g==
+undici@^7.1.1:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/undici/-/undici-7.1.1.tgz#f11eceeaaaa34ff8a28da31b68b0b4a8d75562f0"
+  integrity sha512-WZkQ6eH9f5ZT93gaIffsbUaDpBwjbpvmMbfaEhOnbdUneurTESeRxwPGwjI28mRFESH3W3e8Togijh37ptOQqA==
 
 unique-filename@^1.1.1:
   version "1.1.1"
