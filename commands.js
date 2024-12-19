@@ -69,7 +69,7 @@ commands.assign([
 			const message = cmd.data.messages.get(cmd.target)
 			if (!message) throw new Error("PANICK!")
 			snow.channel.createMessage(cmd.channel.id, {
-				content: "Using Optifine is not recommended under any circumstances.\nIf you're using Forge/NeoForge, consider using Embeddium as a faster renderer and Oculus for shaders (depends on embeddium)\nIf you're using Fabric/Quilt, consider using Sodium as a faster renderer and Iris for shaders (depends on Sodium)\n\nAs a disclaimer; Physics Mod does have some support for Optifine, but this support could break. Optifine is very invasive and is horrible with mod support.",
+				content: "Using Optifine is not recommended under any circumstances.\nIf you're using Forge/NeoForge, consider using Embeddium as a faster renderer and Oculus for shaders (depends on Embeddium)\nIf you're using Fabric/Quilt, consider using Sodium as a faster renderer and Iris for shaders (depends on Sodium)\n\nAs a disclaimer; Physics Mod does have some support for Optifine, but this support could break. Optifine is very invasive and is horrible with mod support.",
 				message_reference: {
 					channel_id: cmd.channel.id,
 					guild_id: cmd.guild_id || void 0,
