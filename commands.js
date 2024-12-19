@@ -56,5 +56,26 @@ commands.assign([
 				content: `${user ? `<@${user.id}>, s` : "S"}omeone thinks you should read this: https://discord.com/channels/231062298008092673/1115343312417718323/1115343312417718323`
 			})
 		}
+	},
+	{
+		name: "trigger-optifine",
+		description: "",
+		category: "triggers",
+		type: 3,
+		guild_ids: [events.physModGuildID],
+		/** @param {import("./packages/commands").ContextMenuCommand} cmd */
+		async process(cmd) {
+			await snow.interaction.deleteOriginalInteractionResponse(cmd.application_id, cmd.token)
+			const message = cmd.data.messages.get(cmd.target)
+			if (!message) throw new Error("PANICK!")
+			snow.channel.createMessage(cmd.channel.id, {
+				content: "Using Optifine is not recommended under any circumstances.\nIf you're using Forge/NeoForge, consider using Embeddium as a faster renderer and Oculus for shaders (depends on embeddium)\nIf you're using Fabric/Quilt, consider using Sodium as a faster renderer and Iris for shaders (depends on Sodium)\n\nAs a disclaimer; Physics Mod does have some support for Optifine, but this support could break. Optifine is very invasive and is horrible with mod support.",
+				message_reference: {
+					channel_id: cmd.channel.id,
+					guild_id: cmd.guild_id || void 0,
+					message_id: message.id
+				}
+			})
+		}
 	}
 ])
