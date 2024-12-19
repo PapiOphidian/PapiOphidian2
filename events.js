@@ -44,7 +44,7 @@ const downloadProMessage = "Here's a video on how to download physics mod pro! T
 const triggerMap = {
 	"scams": {
 		ignoreRoles: [...physModGoodRoles, ...mumsHouseGoodRoles],
-		matchers: [/20/, /50/, /steam/i, /gift/i, /(?:https?:\/\/)?discord\.gg\/\w+/, /https?:\/\/t.me/],
+		matchers: [/20/, /50/, /steam/i, /gift/i, /(?:https?:\/\/)?discord\.gg\/\w+/, /https?:\/\/t.me/, /\[steam/i],
 		test(positions) {
 			return utils.buildCase(positions, 10, 0, 2) // 20 steam
 				|| utils.buildCase(positions, 10, 0, 3) // 20 gift
@@ -53,6 +53,7 @@ const triggerMap = {
 				|| utils.buildCase(positions, 10, 3, 1) // gift 50
 				|| utils.buildCase(positions, -1, 4) // discord link (possibly nsfw)
 				|| utils.buildCase(positions, -1, 5) // telegram short link
+				|| utils.buildCase(positions, 15, 3, 6) // gift ... [steam (using a masked link)
 		},
 		async trigger(msg) {
 			if (!msg.guild_id) return
