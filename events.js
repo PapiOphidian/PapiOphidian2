@@ -94,7 +94,7 @@ const triggerMap = {
 		trigger(msg) {
 			const file = {
 				name: "pysiksmodtutorial.mp4",
-				file: fs.createReadStream(path.join(__dirname, "./videos/download.mp4"))
+				file: fs.createReadStream(path.join(__dirname, "./assets/download-pro.mp4"))
 			}
 			if (msg.channel_id === physModGameDevTalkID) {
 				snow.channel.deleteMessage(msg.channel_id, msg.id)

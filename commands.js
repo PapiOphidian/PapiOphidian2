@@ -1,3 +1,6 @@
+const fs = require("fs")
+const path = require("path")
+
 const passthrough = require("./passthrough")
 
 const { commands, snow, sync } = passthrough
@@ -70,6 +73,32 @@ commands.assign([
 			if (!message) throw new Error("PANICK!")
 			snow.channel.createMessage(cmd.channel.id, {
 				content: "Using Optifine is not recommended under any circumstances.\nIf you're using Forge/NeoForge, consider using Embeddium as a faster renderer and Oculus for shaders (depends on Embeddium)\nIf you're using Fabric/Quilt, consider using Sodium as a faster renderer and Iris for shaders (depends on Sodium)\n\nAs a disclaimer; Physics Mod does have some support for Optifine, but this support could break. Optifine is very invasive and is horrible with mod support.",
+				message_reference: {
+					channel_id: cmd.channel.id,
+					guild_id: cmd.guild_id || void 0,
+					message_id: message.id
+				}
+			})
+		}
+	},
+	{
+		name: "trigger-thanos",
+		description: "",
+		category: "triggers",
+		type: 3,
+		guild_ids: [events.physModGuildID],
+		/** @param {import("./packages/commands").ContextMenuCommand} cmd */
+		async process(cmd) {
+			await snow.interaction.deleteOriginalInteractionResponse(cmd.application_id, cmd.token)
+			const message = cmd.data.messages.get(cmd.target)
+			if (!message) throw new Error("PANICK!")
+			const file = {
+				name: "thanos-method.gif",
+				file: fs.createReadStream(path.join(__dirname, "./assets/binary-search.gif"))
+			}
+			snow.channel.createMessage(cmd.channel.id, {
+				content: "What is The Thanos Method?\nThe Thanos Method™️ (more accurately known as a binary search) is a debugging technique used to find the mod or mods that are causing the issues you are experiencing. The method is simple: to find the conflicting mods, split your mods folder into 2 groups. Remove one group, and test in-game. Keep the group that has the problem, and repeat until no more mods can be removed without the issue disappearing. Thanks to The Thanos Method™️, you can now enjoy an issue free modded Minecraft!\n\n-# \"The Thanos Method\" is not actually trademarked or even remotely considered an official name. Please don't sue, it was just considered funny.",
+				files: [file],
 				message_reference: {
 					channel_id: cmd.channel.id,
 					guild_id: cmd.guild_id || void 0,
