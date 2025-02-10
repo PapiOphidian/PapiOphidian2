@@ -34,6 +34,10 @@ module.exports.reportChannelMap = reportChannelMap
 const mimetypeRegex = /\.(\w+)$/
 const imageMimes = new Set(["png", "gif", "jpg", "jpeg", "webp"])
 const videoMimes = new Set(["mp4", "mov", "webm"])
+/** @type {Set<string>} */
+const timingOutSetIgnoreSpam = new Set()
+/** @type {Map<string, Array<string>>} */
+const userRecentMessages = new Map()
 
 const physModGeneralID = "882927654007881778"
 const physModGameDevTalkID = "231062298008092673"
@@ -44,7 +48,16 @@ const downloadProMessage = "Here's a video on how to download physics mod pro! T
 const triggerMap = {
 	"scams": {
 		ignoreRoles: [...physModGoodRoles, ...mumsHouseGoodRoles],
-		matchers: [/20/, /50/, /steam/i, /gift/i, /(?:https?:\/\/)?discord\.gg\/\w+/, /https?:\/\/t.me/, /\[steam/i],
+		matchers: [
+			/20/,
+			/50/,
+			/steam/i,
+			/gift/i,
+			/(?:https?:\/\/)?discord\.gg\/\w+/,
+			/https?:\/\/t.me/,
+			/\[steam/i,
+			/(?:(?:i will)|(?:i[^l]?ll)) (?:(?:teach)|(?:help)(?: the first))? \d+/i
+		],
 		test(positions) {
 			return utils.buildCase(positions, 10, 0, 2) // 20 steam
 				|| utils.buildCase(positions, 10, 0, 3) // 20 gift
@@ -54,22 +67,32 @@ const triggerMap = {
 				|| utils.buildCase(positions, -1, 4) // discord link (possibly nsfw)
 				|| utils.buildCase(positions, -1, 5) // telegram short link
 				|| utils.buildCase(positions, 15, 3, 6) // gift ... [steam (using a masked link)
+				|| utils.buildCase(positions, 10, 7) // I'll help the first 20...
 		},
 		async trigger(msg) {
 			if (!msg.guild_id) return
-			const timeout = new Date()
-			timeout.setDate(timeout.getDate() + 7) // 1 week timeout
-			const cont = await Promise.all([
-				snow.channel.deleteMessage(msg.channel_id, msg.id, "scamming"),
-				snow.guild.updateGuildMember(msg.guild_id, msg.author.id, {
-					communication_disabled_until: timeout.toISOString()
-				})
-			]).then(() => true).catch(() => false)
 
-			if (!cont) {
-				console.log(`Failed to timeout user ${msg.author.username} (${msg.author.id}) for possible scam\n\n${msg.content}`)
-				return true
+			const timeoutAndReport = !timingOutSetIgnoreSpam.has(msg.author.id)
+			timingOutSetIgnoreSpam.add(msg.author.id)
+			setTimeout(() => timingOutSetIgnoreSpam.delete(msg.author.id), 10000)
+
+			/** @type {Array<Promise<any>>} */
+			const promises = [snow.channel.deleteMessage(msg.channel_id, msg.id, "scamming")]
+
+			if (timeoutAndReport) {
+				const timeout = new Date()
+				timeout.setDate(timeout.getDate() + 7) // 1 week timeout
+				promises.push(
+					snow.guild.updateGuildMember(msg.guild_id, msg.author.id, {
+						communication_disabled_until: timeout.toISOString()
+					})
+				)
 			}
+
+			const cont = await Promise.all(promises).then(() => true).catch(() => false)
+			if (!cont) return console.log(`Failed to timeout user ${msg.author.username} (${msg.author.id}) for possible scam\n\n${msg.content}`)
+
+			if (!timeoutAndReport) return
 
 			const channel = reportChannelMap[msg.guild_id]
 			if (!channel) return
@@ -163,7 +186,32 @@ sync.addTemporaryListener(
 			case "MESSAGE_CREATE": {
 				if (data.d.author.bot) return
 
-				starboardMessageHandler("create", data.d)
+				if (timingOutSetIgnoreSpam.has(data.d.author.id)) return snow.channel.deleteMessage(data.d.channel_id, data.d.id, "Likely spam scamming").catch(() => void 0)
+
+				utils.setCachedObject("message", data.d.id, data.d, 1000 * 60 * 60) // cache messages for 1h for starboard
+
+				const previousMessageIDs = userRecentMessages.get(data.d.author.id) ?? [] // spamming accross channels scam detection
+				userRecentMessages.set(data.d.author.id, previousMessageIDs)
+				const previousMessagesIncludesThisMessage = previousMessageIDs
+					.map(id => {
+						/** @type {import("discord-api-types/v10").APIMessage | null} */
+						const m = utils.getCachedObject("message", id)
+						return m
+					})
+					.filter(m => !!m)
+					.filter(msg => msg.content === data.d.content && msg.channel_id !== data.d.channel_id)
+
+				previousMessageIDs.push(data.d.id)
+				setTimeout(() => userRecentMessages.delete(data.d.author.id), 10000)
+
+				if (previousMessagesIncludesThisMessage.length) {
+					triggerMap["scams"].trigger(data.d)
+					for (const msg of previousMessagesIncludesThisMessage) {
+						snow.channel.deleteMessage(msg.channel_id, msg.id, "Likely spam scamming").catch(() => void 0)
+					}
+					return
+				}
+
 
 				if (utils.checkTriggers(data.d, triggerMap)) return
 				if (await utils.checkCrashLog(data.d)) return
@@ -207,7 +255,6 @@ const deferedChanges = new Set()
 
 /**
  * @typedef {{
- * 	"create": import("discord-api-types/v10").GatewayMessageCreateDispatchData,
  * 	"update": import("discord-api-types/v10").GatewayMessageUpdateDispatchData,
  * 	"add": import("discord-api-types/v10").GatewayMessageReactionAddDispatchData,
  * 	"remove": import("discord-api-types/v10").GatewayMessageReactionRemoveDispatchData
@@ -220,10 +267,8 @@ const deferedChanges = new Set()
  * @param {StarboardHandlerDataMap[RKeys<StarboardHandlerDataMap>]} data
  */
 async function starboardMessageHandler(mode, data) {
-	/** @type {StarboardHandlerDataMap["create"]} */ // @ts-ignore
-	const create = data,
 	/** @type {StarboardHandlerDataMap["update"]} */ // @ts-ignore
-	update = data,
+	const update = data,
 	/** @type {StarboardHandlerDataMap["add"]} */ // @ts-ignore
 	add = data,
 	/** @type {StarboardHandlerDataMap["remove"]} */ // @ts-ignore
@@ -242,9 +287,6 @@ async function starboardMessageHandler(mode, data) {
 			// @ts-expect-error
 			guildID = update.guild_id; channelID = update.channel_id; messageID = update.id; userID = update.member?.user?.id ?? update.author?.id
 			break
-		case "create":
-			guildID = create.guild_id; channelID = create.channel_id; messageID = create.id; userID = create.author.id
-			break
 		default: throw new Error("No")
 	}
 
@@ -255,8 +297,6 @@ async function starboardMessageHandler(mode, data) {
 	if (!sb) return
 
 	if (sb.ignore_channel_ids?.split(",").includes(channelID)) return
-
-	if (mode === "create") return utils.setCachedObject("message", create.id, create, 1000 * 60 * 60 * 6)
 
 	/** @type {import("discord-api-types/v10").APIMessage | null} */
 	const cached = utils.getCachedObject("message", messageID)
