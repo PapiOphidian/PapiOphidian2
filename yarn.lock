@@ -28,10 +28,10 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
-"@types/node@^22.13.1":
-  version "22.13.1"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.13.1.tgz#a2a3fefbdeb7ba6b89f40371842162fac0934f33"
-  integrity sha512-jK8uzQlrvXqEU91UxiK5J7pKHyzgnI1Qnl0QDHIgVGuolJhRb9EEl28Cj9b3rGR8B2lhFCtvIm5os8lFnO/1Ew==
+"@types/node@^22.13.2":
+  version "22.13.2"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.13.2.tgz#6f401c5ccadac75354f5652128e9fcc3b0cf23b7"
+  integrity sha512-Z+r8y3XL9ZpI2EY52YYygAFmo2/oWfNSj4BCpAXE2McAexDk8VcnBMGC9Djn9gTKt4d2T/hhXqmPzo4hfIXtTg==
   dependencies:
     undici-types "~6.20.0"
 
@@ -320,10 +320,10 @@ has-unicode@^2.0.1:
   resolved "https://registry.yarnpkg.com/has-unicode/-/has-unicode-2.0.1.tgz#e0e6fe6a28cf51138855e086d1691e771de2a8b9"
   integrity sha512-8Rf9Y83NBReMnx0gFzA8JImQACstCYWUplepDa9xprwwtmgEZUF0h/i5xSA625zB/I37EtrswSST6OXxwaaIJQ==
 
-heatsync@^2.6.0:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/heatsync/-/heatsync-2.6.0.tgz#f50843599892391e8a5d935c0fcbb40f9d4b46c0"
-  integrity sha512-UfemOt4Kg1hvhDj/Zz8sYa1pF73ul+tF19MYNisYoOymXoTo4iCZv2BDdCMFE1xvZ6YFjcMoekb/aeBU1uqFjQ==
+heatsync@^2.7.1:
+  version "2.7.1"
+  resolved "https://registry.yarnpkg.com/heatsync/-/heatsync-2.7.1.tgz#e596725b4aa2d2da4a227b4c20a4464bc3cfb44d"
+  integrity sha512-5NbvwA7hestDPv2CIaEb0Z7zMbKlpG75GpVwFdjn1VXcMNzdaw1mkaJ5Z+OqZugC7a9HyyqZog4RSEuWJpI1WA==
   dependencies:
     backtracker "^4.0.0"
 
