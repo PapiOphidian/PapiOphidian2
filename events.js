@@ -169,7 +169,8 @@ const triggerMap = {
 }
 module.exports.triggerMap = triggerMap
 
-sync.addTemporaryListener(snow.requestHandler, "requestError", console.error)
+sync.addTemporaryListener(snow.requestHandler, "requestError", (_reqID, info) => console.error(info))
+sync.addTemporaryListener(snow.requestHandler, "rateLimit", console.error)
 sync.addTemporaryListener(
 	cloud,
 	"dispatch",
