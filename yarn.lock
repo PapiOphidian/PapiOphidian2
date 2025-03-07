@@ -28,10 +28,10 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
-"@types/node@^22.13.4":
-  version "22.13.4"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.13.4.tgz#3fe454d77cd4a2d73c214008b3e331bfaaf5038a"
-  integrity sha512-ywP2X0DYtX3y08eFVx5fNIw7/uIv8hYUKgXoK8oayJlLnKcRfEYCxWMVE1XagUdVtCJlZT1AU4LXEABW+L1Peg==
+"@types/node@^22.13.9":
+  version "22.13.9"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.13.9.tgz#5d9a8f7a975a5bd3ef267352deb96fb13ec02eca"
+  integrity sha512-acBjXdRJ3A6Pb3tqnw9HZmyR3Fiol3aGxRCK1x3d+6CDAMjl7I649wpSd+yNURCjbOUGu9tqtLKnTGxmK6CyGw==
   dependencies:
     undici-types "~6.20.0"
 
@@ -166,13 +166,13 @@ clean-stack@^2.0.0:
   resolved "https://registry.yarnpkg.com/clean-stack/-/clean-stack-2.2.0.tgz#ee8472dbb129e727b31e8a10a427dee9dfe4008b"
   integrity sha512-4diC9HaTE+KRAMWhDhrGOECgWZxoevMc5TlkObMqNSsVU62PYzXZ/SMTjzyGAFF1YusgxGcSWTEXBhp0CPwQ1A==
 
-cloudstorm@^0.11.4:
-  version "0.11.4"
-  resolved "https://registry.yarnpkg.com/cloudstorm/-/cloudstorm-0.11.4.tgz#2ed25b43d71be2ae9d9f5684d3a566790bb7bef1"
-  integrity sha512-fk0tAyZmUBWrxELyXaKh19s1RJucmhmvTMfB/LrvdRHdUvc20VkD7qCrFaQHSQ/+kzwhSHVY43zNAjtz93pH9A==
+cloudstorm@^0.11.6:
+  version "0.11.6"
+  resolved "https://registry.yarnpkg.com/cloudstorm/-/cloudstorm-0.11.6.tgz#ac85e8bb2ed28ec3c96de1b52a68dbe028b6caaa"
+  integrity sha512-U3uWNwlE1LiRf1sDHAENb7oR9odosXMArRyX5bX+sG4c75nSqzbQm4wtczw93g9suFXsXu6ekuyHFLpoWMnM+g==
   dependencies:
     discord-api-types "^0.37.119"
-    snowtransfer "^0.12.0"
+    snowtransfer "^0.13.1"
 
 color-support@^1.1.3:
   version "1.1.3"
@@ -742,10 +742,10 @@ smart-buffer@^4.2.0:
   resolved "https://registry.yarnpkg.com/smart-buffer/-/smart-buffer-4.2.0.tgz#6e1d71fa4f18c05f7d0ff216dd16a481d0e8d9ae"
   integrity sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==
 
-snowtransfer@^0.12.0:
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/snowtransfer/-/snowtransfer-0.12.0.tgz#f221c4f5cad9d9c7e745577eb64a51fbd686735f"
-  integrity sha512-EmVTAeSXtA7ZlTqwmZxe5JwRTm4FOXEOqMOzGu8fdVSoqXjcWgQ8IfaIRu/54FamOMjOmcxnpTyNPj5MUqWxpA==
+snowtransfer@^0.13.1:
+  version "0.13.1"
+  resolved "https://registry.yarnpkg.com/snowtransfer/-/snowtransfer-0.13.1.tgz#31a722f4c3b0105917f276964e4f22b6cebcf00d"
+  integrity sha512-EMrvqCk0JVcpJILTV9JEvUi3VyC5kohcza9d9l034B+cXwLbOWKFhzKULBPe/VqTdx+aqFpdYCdb1/HDrRiZ1Q==
   dependencies:
     discord-api-types "^0.37.119"
 
