@@ -2,7 +2,7 @@ const { SnowTransfer } = require("snowtransfer")
 const { Client } = require("cloudstorm")
 const Sync = require("heatsync")
 
-const { PresenceUpdateStatus } = require("discord-api-types/v10")
+const { PresenceUpdateStatus, AllowedMentionsTypes } = require("discord-api-types/v10")
 
 const { CommandManager, ChatInputCommand, ContextMenuCommand } = require("./packages/commands")
 
@@ -12,7 +12,9 @@ const sync = new Sync()
 const config = sync.require("./config.js")
 
 const snow = new SnowTransfer(config.token, {
-	disableEveryone: true
+	allowed_mentions: {
+		parse: [AllowedMentionsTypes.Role, AllowedMentionsTypes.User]
+	}
 })
 
 module.exports = {
