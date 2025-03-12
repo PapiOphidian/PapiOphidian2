@@ -28,10 +28,10 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
-"@types/node@^22.13.9":
-  version "22.13.9"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.13.9.tgz#5d9a8f7a975a5bd3ef267352deb96fb13ec02eca"
-  integrity sha512-acBjXdRJ3A6Pb3tqnw9HZmyR3Fiol3aGxRCK1x3d+6CDAMjl7I649wpSd+yNURCjbOUGu9tqtLKnTGxmK6CyGw==
+"@types/node@^22.13.10":
+  version "22.13.10"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.13.10.tgz#df9ea358c5ed991266becc3109dc2dc9125d77e4"
+  integrity sha512-I6LPUvlRH+O6VRUqYOcMudhaIdUVWfsjnZavnsraHvpBwaEyMN29ry+0UVJhImYL16xsscu0aske3yA+uPOWfw==
   dependencies:
     undici-types "~6.20.0"
 
@@ -166,10 +166,10 @@ clean-stack@^2.0.0:
   resolved "https://registry.yarnpkg.com/clean-stack/-/clean-stack-2.2.0.tgz#ee8472dbb129e727b31e8a10a427dee9dfe4008b"
   integrity sha512-4diC9HaTE+KRAMWhDhrGOECgWZxoevMc5TlkObMqNSsVU62PYzXZ/SMTjzyGAFF1YusgxGcSWTEXBhp0CPwQ1A==
 
-cloudstorm@^0.11.6:
-  version "0.11.6"
-  resolved "https://registry.yarnpkg.com/cloudstorm/-/cloudstorm-0.11.6.tgz#ac85e8bb2ed28ec3c96de1b52a68dbe028b6caaa"
-  integrity sha512-U3uWNwlE1LiRf1sDHAENb7oR9odosXMArRyX5bX+sG4c75nSqzbQm4wtczw93g9suFXsXu6ekuyHFLpoWMnM+g==
+cloudstorm@^0.12.0:
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/cloudstorm/-/cloudstorm-0.12.0.tgz#e211d267aee91acd023c7ec087d88954b82019f0"
+  integrity sha512-2rxx1hzlSzYc2cssPak6+PCsuHVT3eTcbFr4+Lp30k+YTukGOw8kzdzHU6O7kWDBgs3UiGfbdAaUgZmRytRYgQ==
   dependencies:
     discord-api-types "^0.37.119"
     snowtransfer "^0.13.1"
@@ -320,10 +320,10 @@ has-unicode@^2.0.1:
   resolved "https://registry.yarnpkg.com/has-unicode/-/has-unicode-2.0.1.tgz#e0e6fe6a28cf51138855e086d1691e771de2a8b9"
   integrity sha512-8Rf9Y83NBReMnx0gFzA8JImQACstCYWUplepDa9xprwwtmgEZUF0h/i5xSA625zB/I37EtrswSST6OXxwaaIJQ==
 
-heatsync@^2.7.2:
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/heatsync/-/heatsync-2.7.2.tgz#db0da804c44bb84382cf13cf5cd5d8e7e7b5e6c9"
-  integrity sha512-1djRg4eufv5q+CRy5SuZSiV3j53KIDSGkDubJB+vXY1OE+AnTkw5HIJxi+0vEjHjX+wbH5syYQunQ/ElAgoEmg==
+heatsync@^2.8.1:
+  version "2.8.1"
+  resolved "https://registry.yarnpkg.com/heatsync/-/heatsync-2.8.1.tgz#ea99a16e2d7a570e077c5cd5471c3e85ac18f204"
+  integrity sha512-BipRCTh6jqndV5FsebdJFQHRKb5J4ecVA7Kqv0gktb/MorrEwgTEoTNSITjEK59heGyP+QnTSj6LyJDFsnVqvQ==
   dependencies:
     backtracker "^4.0.0"
 
