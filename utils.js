@@ -106,6 +106,7 @@ function performCrashCheckOn(str) {
 
 const clientBrandRegex = /Client brand changed to '([^']+)'/
 const optifineRegex = /\[optifine]/i
+const optifine2Regex = /OptiFine Version: ([^\n])/
 const fabricRegex = /fabric/i
 const OOMRegex = /# There is insufficient memory for the Java Runtime Environment to continue/
 const defaultVersionPlaceholder = "unextractable"
@@ -115,7 +116,8 @@ const defaultVersionPlaceholder = "unextractable"
  * @param {Array<Array<string>>} errors
  */
 async function sendCrashLogBreakdown(msg, log, errors) {
-	const hasOptifine = optifineRegex.test(log)
+	let hasOptifine = optifineRegex.test(log)
+	if (!hasOptifine) hasOptifine = optifine2Regex.test(log)
 	let estimatedBrand = "Other"
 	let estimated = true
 	const brand = clientBrandRegex.exec(log)
@@ -222,6 +224,8 @@ function getModList(log) {
 	/** @type {Array<{ modid: string, version: string }>} */
 	const mods = [] // doesnt include bundled deps
 	let totalMods = 0
+	const toPrune = ["^java", "=minecraft", "^forge-", "=forge", "^fmlcore", "^lowcodelanguage", "^mclanguage", "$-srg"]
+	let pruned = 0
 
 
 	const modlistMatch1 = easyModListRegex.exec(log)
@@ -256,7 +260,22 @@ function getModList(log) {
 		totalMods = mods.length
 	}
 
-	return { mods, totalMods }
+	for (let i = 0; i < mods.length; i++) {
+		const shouldPrune = toPrune.find(matcher => {
+			const matchMethod = matcher[0]
+			const toMatch = matcher.slice(1)
+
+			if (matchMethod === "=") return mods[i].modid === toMatch
+			else if (matchMethod === "^") return mods[i].modid.startsWith(toMatch)
+			else return mods[i].modid.endsWith(toMatch)
+		})
+		if (shouldPrune) {
+			mods.splice(i, 1)
+			pruned++
+		}
+	}
+
+	return { mods, totalMods: totalMods - pruned }
 }
 
 

@@ -1,6 +1,11 @@
 const fs = require("fs")
 const path = require("path")
 
+const {
+	ComponentType,
+	MessageFlags
+} = require("discord-api-types/v10")
+
 const passthrough = require("./passthrough")
 
 const { sync, snow, cloud, db } = passthrough
@@ -347,20 +352,37 @@ async function starboardMessageHandler(mode, data) {
 		}
 	}
 
-	/** @type {import("discord-api-types/v10").APIEmbed} */
-	const embed = {
-		author: {
-			name: message.author.username
-		},
-		description: message.content.length
-			? message.content.slice(0, 1999)
-			: undefined
-	}
+	/** @type {Array<import("discord-api-types/v10").APIMessageTopLevelComponent>} */
+	const extra = message.content.length
+			? [{ type: ComponentType.TextDisplay, content: message.content.slice(0, 1899) }]
+			: []
 
 	if (key && embeddedContentToUse) {
+		extra.push({
+			type: ComponentType.MediaGallery,
+			items: [
+				{
+					media: {
+						url: embeddedContentToUse
+					}
+				}
+			]
+		})
+	}
+
+	/** @type {Array<import("discord-api-types/v10").APIMessageTopLevelComponent>} */
+	const components = [
+		{
+			type: ComponentType.TextDisplay,
+			content: message.author.username
+		},
+		...extra
+	]
+
+	/* if (key && embeddedContentToUse) {
 		if (key === "video") embed.image = { url: "https://b.catgirlsare.sexy/4W4iqLSlAOWw.png" } // Discord doesn't allow video embeds
 		else embed[key] = { url: embeddedContentToUse }
-	}
+	}*/
 
 	/** @type {DBStarboardMap | undefined} */
 	const existingPost = await db.get("SELECT * FROM starboard_map WHERE message_id =?", [messageID])
@@ -368,8 +390,8 @@ async function starboardMessageHandler(mode, data) {
 	if (!existingPost) {
 		const instantPromote = !!sb.instant_promote_role_ids?.split(",").find(r => add.member?.roles.includes(r))
 		if (reaction.count >= sb.min || instantPromote) {
-			const content = utils.replace(starboardContentFormat, { "emoji": sb.emoji, "reactions": reaction.count, "jump": `https://discord.com/channels/${guildID}/${channelID}/${messageID}` })
-			const result = await snow.channel.createMessage(sb.channel_id, { content, embeds: [embed] })
+			components.unshift({ type: ComponentType.TextDisplay, content: utils.replace(starboardContentFormat, { "emoji": sb.emoji, "reactions": reaction.count, "jump": `https://discord.com/channels/${guildID}/${channelID}/${messageID}` }) })
+			const result = await snow.channel.createMessage(sb.channel_id, { flags: MessageFlags.IsComponentsV2, components })
 			db.all("INSERT INTO starboard_map (message_id, sb_message_id) VALUES (?, ?)", [message.id, result.id])
 		}
 	} else {
@@ -377,8 +399,8 @@ async function starboardMessageHandler(mode, data) {
 		setTimeout(() => {
 			const reactionUpToDate = message.reactions?.find(r => r.emoji.name === sb.emoji)
 			if (reactionUpToDate) {
-				const content = utils.replace(starboardContentFormat, { "emoji": sb.emoji, "reactions": reactionUpToDate.count, "jump": `https://discord.com/channels/${guildID}/${channelID}/${messageID}` })
-				snow.channel.editMessage(sb.channel_id, existingPost.sb_message_id, { content, embeds: [embed] }).catch(() => void 0)
+				components.unshift({ type: ComponentType.TextDisplay, content: utils.replace(starboardContentFormat, { "emoji": sb.emoji, "reactions": reactionUpToDate.count, "jump": `https://discord.com/channels/${guildID}/${channelID}/${messageID}` }) })
+				snow.channel.editMessage(sb.channel_id, existingPost.sb_message_id, { flags: MessageFlags.IsComponentsV2, components }).catch(() => void 0)
 			}
 			deferedChanges.delete(messageID)
 		}, 5000)
