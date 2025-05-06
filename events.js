@@ -335,7 +335,7 @@ async function starboardMessageHandler(mode, data) {
 	if (!reaction) return
 
 	const embeddedContentToUse = message.attachments.filter(i => i.content_type?.startsWith("image/") || i.content_type?.startsWith("video/")).map(i => i.url)
-	embeddedContentToUse.push(...message.embeds.filter(e => e.thumbnail?.url || e.video?.url || e.type === "gifv").map(e => e.type === "gifv" ? e.url : e.thumbnail ? e.thumbnail.url : e.video?.url).filter(t => t !== undefined))
+	embeddedContentToUse.push(...message.embeds.filter(e => e.thumbnail?.url || e.video?.url).map(e => e.video ? e.video.url : e.thumbnail?.url).filter(t => t !== undefined))
 
 	/** @type {import("discord-api-types/v10").APIContainerComponent} */
 	const container = message.content.length
