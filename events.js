@@ -352,13 +352,13 @@ async function starboardMessageHandler(mode, data) {
 		}
 	}
 
-	/** @type {Array<import("discord-api-types/v10").APIMessageTopLevelComponent>} */
-	const extra = message.content.length
-			? [{ type: ComponentType.TextDisplay, content: message.content.slice(0, 1899) }]
-			: []
+	/** @type {import("discord-api-types/v10").APIContainerComponent} */
+	const container = message.content.length
+			? { type: ComponentType.Container, components: [{ type: ComponentType.TextDisplay, content: message.content.slice(0, 1899) }] }
+			: { type: ComponentType.Container, components: [] }
 
 	if (key && embeddedContentToUse) {
-		extra.push({
+		container.components.push({
 			type: ComponentType.MediaGallery,
 			items: [
 				{
@@ -370,14 +370,13 @@ async function starboardMessageHandler(mode, data) {
 		})
 	}
 
+	container.components.unshift({
+		type: ComponentType.TextDisplay,
+		content: `<@${message.author.id}>`
+	})
+
 	/** @type {Array<import("discord-api-types/v10").APIMessageTopLevelComponent>} */
-	const components = [
-		{
-			type: ComponentType.TextDisplay,
-			content: `<@${message.author.id}>`
-		},
-		...extra
-	]
+	const components = [container]
 
 	/* if (key && embeddedContentToUse) {
 		if (key === "video") embed.image = { url: "https://b.catgirlsare.sexy/4W4iqLSlAOWw.png" } // Discord doesn't allow video embeds
