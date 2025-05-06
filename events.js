@@ -400,7 +400,7 @@ async function starboardMessageHandler(mode, data) {
 			const reactionUpToDate = message.reactions?.find(r => r.emoji.name === sb.emoji)
 			if (reactionUpToDate) {
 				components.unshift({ type: ComponentType.TextDisplay, content: utils.replace(starboardContentFormat, { "emoji": sb.emoji, "reactions": reactionUpToDate.count, "jump": `https://discord.com/channels/${guildID}/${channelID}/${messageID}` }) })
-				snow.channel.editMessage(sb.channel_id, existingPost.sb_message_id, { content: null, embeds: null, flags: MessageFlags.IsComponentsV2, components }).catch(() => void 0)
+				snow.channel.editMessage(sb.channel_id, existingPost.sb_message_id, { content: null, embeds: [], flags: MessageFlags.IsComponentsV2, components }).catch(() => void 0)
 			}
 			deferedChanges.delete(messageID)
 		}, 5000)
