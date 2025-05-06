@@ -374,7 +374,7 @@ async function starboardMessageHandler(mode, data) {
 	const components = [
 		{
 			type: ComponentType.TextDisplay,
-			content: message.author.username
+			content: `<@${message.author.id}>`
 		},
 		...extra
 	]
@@ -391,7 +391,7 @@ async function starboardMessageHandler(mode, data) {
 		const instantPromote = !!sb.instant_promote_role_ids?.split(",").find(r => add.member?.roles.includes(r))
 		if (reaction.count >= sb.min || instantPromote) {
 			components.unshift({ type: ComponentType.TextDisplay, content: utils.replace(starboardContentFormat, { "emoji": sb.emoji, "reactions": reaction.count, "jump": `https://discord.com/channels/${guildID}/${channelID}/${messageID}` }) })
-			const result = await snow.channel.createMessage(sb.channel_id, { flags: MessageFlags.IsComponentsV2, components })
+			const result = await snow.channel.createMessage(sb.channel_id, { flags: MessageFlags.IsComponentsV2, components, allowed_mentions: { parse: [] } })
 			db.all("INSERT INTO starboard_map (message_id, sb_message_id) VALUES (?, ?)", [message.id, result.id])
 		}
 	} else {
@@ -400,7 +400,7 @@ async function starboardMessageHandler(mode, data) {
 			const reactionUpToDate = message.reactions?.find(r => r.emoji.name === sb.emoji)
 			if (reactionUpToDate) {
 				components.unshift({ type: ComponentType.TextDisplay, content: utils.replace(starboardContentFormat, { "emoji": sb.emoji, "reactions": reactionUpToDate.count, "jump": `https://discord.com/channels/${guildID}/${channelID}/${messageID}` }) })
-				snow.channel.editMessage(sb.channel_id, existingPost.sb_message_id, { content: null, embeds: [], flags: MessageFlags.IsComponentsV2, components }).catch(() => void 0)
+				snow.channel.editMessage(sb.channel_id, existingPost.sb_message_id, { content: null, embeds: [], flags: MessageFlags.IsComponentsV2, components, allowed_mentions: { parse: [] } }).catch(() => void 0)
 			}
 			deferedChanges.delete(messageID)
 		}, 5000)
