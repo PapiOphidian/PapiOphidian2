@@ -334,39 +334,18 @@ async function starboardMessageHandler(mode, data) {
 	const reaction = message.reactions.find(r => r.emoji.name === sb.emoji)
 	if (!reaction) return
 
-	const embeddedContentToUse = message.attachments.length
-		? message.attachments[0].url
-		: message.embeds.find(e => e.thumbnail?.url)?.thumbnail?.url
-			?? message.embeds.find(e => e.video?.url)?.video?.url
-
-	/** @type {"image" | "video" | undefined} */
-	let key
-
-	if (embeddedContentToUse) {
-		const url = new URL(embeddedContentToUse)
-		const mimeMatch = mimetypeRegex.exec(url.pathname)
-		if (mimeMatch) {
-			const mime = mimeMatch[1].toLowerCase()
-			if (imageMimes.has(mime)) key = "image"
-			else if (videoMimes.has(mime)) key = "video"
-		}
-	}
+	const embeddedContentToUse = message.attachments.filter(i => i.content_type?.startsWith("image/") || i.content_type?.startsWith("video/")).map(i => i.url)
+	embeddedContentToUse.push(...message.embeds.filter(e => e.thumbnail?.url || e.video?.url || e.type === "gifv").map(e => e.type === "gifv" ? e.url : e.thumbnail ? e.thumbnail.url : e.video?.url).filter(t => t !== undefined))
 
 	/** @type {import("discord-api-types/v10").APIContainerComponent} */
 	const container = message.content.length
 			? { type: ComponentType.Container, components: [{ type: ComponentType.TextDisplay, content: message.content.slice(0, 1899) }] }
 			: { type: ComponentType.Container, components: [] }
 
-	if (key && embeddedContentToUse) {
+	if (embeddedContentToUse.length) {
 		container.components.push({
 			type: ComponentType.MediaGallery,
-			items: [
-				{
-					media: {
-						url: embeddedContentToUse
-					}
-				}
-			]
+			items: embeddedContentToUse.slice(0, 9).map(i => ({ media: { url: i } }))
 		})
 	}
 
