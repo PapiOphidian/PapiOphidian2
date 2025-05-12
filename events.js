@@ -46,6 +46,7 @@ const userRecentMessages = new Map()
 
 const physModGeneralID = "882927654007881778"
 const physModGameDevTalkID = "231062298008092673"
+module.exports.physModGameDevTalkID = physModGameDevTalkID
 
 const downloadProMessage = "Here's a video on how to download physics mod pro! The downloads are only through [Patreon](<https://patreon.com/Haubna>) and [Ko-Fi](<https://ko-fi.com/haubna>), but you don't *have* to pay.\nSupport is always appreciated however!"
 
@@ -102,7 +103,7 @@ const triggerMap = {
 			const channel = reportChannelMap[msg.guild_id]
 			if (!channel) return
 
-			snow.channel.createMessage(channel, { content: `Timed out <@${msg.author.id}> for scamming.\n\`\`\`\n${msg.content}\`\`\`` })
+			snow.channel.createMessage(channel, { content: `Timed out <@${msg.author.id}> for scamming.\n\`\`\`\n${msg.content.slice(0, 1900)}${msg.content.length > 1900 ? "..." : ""}\`\`\`` })
 		}
 	},
 	"phys_download": {
@@ -339,8 +340,8 @@ async function starboardMessageHandler(mode, data) {
 
 	/** @type {import("discord-api-types/v10").APIContainerComponent} */
 	const container = message.content.length
-			? { type: ComponentType.Container, components: [{ type: ComponentType.TextDisplay, content: message.content.slice(0, 1899) }] }
-			: { type: ComponentType.Container, components: [] }
+		? { type: ComponentType.Container, components: [{ type: ComponentType.TextDisplay, content: message.content.slice(0, 1899) }] }
+		: { type: ComponentType.Container, components: [] }
 
 	if (embeddedContentToUse.length) {
 		container.components.push({

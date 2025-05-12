@@ -20,6 +20,11 @@ commands.assign([
 			await snow.interaction.deleteOriginalInteractionResponse(cmd.application_id, cmd.token)
 			const message = cmd.data.messages.get(cmd.target)
 			if (!message) throw new Error("PANICK!")
+			if (cmd.channel.id === events.physModGameDevTalkID) {
+				snow.channel.createMessage(events.reportChannelMap[events.physModGuildID], {
+					content: `<@${cmd.author.id}> used trigger get pro in <#${events.physModGameDevTalkID}> deleting message to redirect:\n\`\`\`${message.content.slice(0, 1900)}${message.content.length > 1900 ? "..." : ""}\n\`\`\``
+				})
+			}
 			events.triggerMap["phys_download"].trigger(message)
 		}
 	},
