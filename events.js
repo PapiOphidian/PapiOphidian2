@@ -208,7 +208,7 @@ sync.addTemporaryListener(
 					.filter(m => !!m)
 					.filter(msg => msg.content === data.d.content && msg.channel_id !== data.d.channel_id)
 
-				previousMessageIDs.push(data.d.id)
+				if (data.d.content.length) previousMessageIDs.push(data.d.id)
 				setTimeout(() => userRecentMessages.delete(data.d.author.id), 10000)
 
 				if (previousMessagesIncludesThisMessage.length) {
