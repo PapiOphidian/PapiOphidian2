@@ -209,7 +209,7 @@ sync.addTemporaryListener(
 					.filter(msg => msg.content === data.d.content && msg.channel_id !== data.d.channel_id)
 
 				if (data.d.content.length) previousMessageIDs.push(data.d.id)
-				setTimeout(() => userRecentMessages.delete(data.d.author.id), 10000)
+				setTimeout(() => userRecentMessages.delete(data.d.author.id), 30000) // detect same message within 30 seconds
 
 				if (previousMessagesIncludesThisMessage.length) {
 					triggerMap["scams"].trigger(data.d)
@@ -232,6 +232,7 @@ sync.addTemporaryListener(
 
 			case "MESSAGE_DELETE": {
 				utils.deleteCachedObject("message", data.d.id)
+				// todo delete messages from userRecentMessages
 				db.all("DELETE FROM starboard_map WHERE message_id =?", [data.d.id])
 				break
 			}
