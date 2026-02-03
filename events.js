@@ -206,10 +206,10 @@ sync.addTemporaryListener(
 						return m
 					})
 					.filter(m => !!m)
-					.filter(msg => msg.content === data.d.content && msg.channel_id !== data.d.channel_id)
+					.filter(msg => msg.content === data.d.content)
 
 				if (data.d.content.length) previousMessageIDs.push(data.d.id)
-				setTimeout(() => userRecentMessages.delete(data.d.author.id), 30000) // detect same message within 30 seconds
+				setTimeout(() => userRecentMessages.delete(data.d.author.id), 10000) // detect same message within 10 seconds
 
 				if (previousMessagesIncludesThisMessage.length) {
 					triggerMap["scams"].trigger(data.d)
