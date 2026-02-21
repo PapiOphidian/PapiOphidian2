@@ -40,8 +40,8 @@ const reportChannelMap = {
 }
 module.exports.reportChannelMap = reportChannelMap
 const mimetypeRegex = /\.(\w+)$/
-const imageMimes = new Set(["png", "gif", "jpg", "jpeg", "webp"])
-const videoMimes = new Set(["mp4", "mov", "webm"])
+const imageMimes = new Set(["image/png", "image/gif", "image/jpg", "image/jpeg", "image/webp"])
+const videoMimes = new Set(["video/mp4", "video/mov", "video/webm"])
 
 const physModGeneralID = "882927654007881778"
 const physModGameDevTalkID = "231062298008092673"
@@ -102,7 +102,7 @@ const triggerMap = {
 			const channel = reportChannelMap[msg.guild_id]
 			if (!channel) return
 
-			snow.channel.createMessage(channel, { content: `Timed out <@${msg.author.id}> for scamming.\n\`\`\`\n${msg.content.slice(0, 1900)}${msg.content.length > 1900 ? "..." : ""}\`\`\`` })
+			snow.channel.createMessage(channel, { content: `Timed out <@${msg.author.id}> for scamming.\n\`\`\`\n${msg.content.slice(0, 1800)}${msg.content.length > 1800 ? "..." : ""}\`\`\`\nImage hashes:\n${(userImageHashesIndex.get(msg.author.id) ?? []).map(aid => imageHashes.get(aid)).join(", ")}` })
 		}
 	},
 	"phys_download": {
@@ -201,6 +201,8 @@ sync.addTemporaryListener(
 
 				if (data.d.attachments.length) {
 					const before = Date.now()
+					const notRecognized = data.d.attachments.filter(a => a.content_type && !imageMimes.has(a.content_type) && !videoMimes.has(a.content_type))
+					if (notRecognized.length) console.log(`Message contains file types not recognized: ${notRecognized.map(a => a.content_type).join(", ")}`)
 					const images = data.d.attachments.filter(a => a.content_type && imageMimes.has(a.content_type) && a.size <= 1024 * 1024 * 1024 * 50) // only download up to 50MB images
 					const existingHashes = userImageHashesIndex.get(data.d.author.id) ?? []
 					userImageHashesIndex.set(data.d.author.id, existingHashes)
