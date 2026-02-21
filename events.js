@@ -6,9 +6,12 @@ const {
 	MessageFlags
 } = require("discord-api-types/v10")
 
+const { hash } = require("imghash")
+const { default: leven } = require("leven")
+
 const passthrough = require("./passthrough")
 
-const { sync, snow, cloud, db } = passthrough
+const { sync, snow, cloud, db, timingOutSetIgnoreSpam, userRecentMessages, imageHashes, userImageHashesIndex } = passthrough
 
 /** @type {typeof import("./utils")} */
 const utils = sync.require("./utils")
@@ -39,10 +42,6 @@ module.exports.reportChannelMap = reportChannelMap
 const mimetypeRegex = /\.(\w+)$/
 const imageMimes = new Set(["png", "gif", "jpg", "jpeg", "webp"])
 const videoMimes = new Set(["mp4", "mov", "webm"])
-/** @type {Set<string>} */
-const timingOutSetIgnoreSpam = new Set()
-/** @type {Map<string, Array<string>>} */
-const userRecentMessages = new Map()
 
 const physModGeneralID = "882927654007881778"
 const physModGameDevTalkID = "231062298008092673"
@@ -199,6 +198,26 @@ sync.addTemporaryListener(
 
 				const previousMessageIDs = userRecentMessages.get(data.d.author.id) ?? [] // spamming accross channels scam detection
 				userRecentMessages.set(data.d.author.id, previousMessageIDs)
+
+				if (data.d.attachments.length) {
+					const before = Date.now()
+					const images = data.d.attachments.filter(a => a.content_type && imageMimes.has(a.content_type) && a.size <= 1024 * 1024 * 1024 * 50) // only download up to 50MB images
+					const existingHashes = userImageHashesIndex.get(data.d.author.id) ?? []
+					userImageHashesIndex.set(data.d.author.id, existingHashes)
+
+					const hashed = await Promise.all(
+						images.map(i => fetch(i.url)
+							.then(r => r.arrayBuffer())
+							.then(b => hash(Buffer.from(b))
+							.then(h => ({ id: i.id, hash: h }))))
+					)
+					for (const info of hashed) {
+						existingHashes.push(info.id)
+						imageHashes.set(info.id, info.hash)
+					}
+					if (images.length) console.log(`${images.length} images took ${Date.now() - before}ms to hash`)
+				}
+
 				const previousMessagesIncludesThisMessage = previousMessageIDs
 					.map(id => {
 						/** @type {import("discord-api-types/v10").APIMessage | null} */
@@ -206,10 +225,23 @@ sync.addTemporaryListener(
 						return m
 					})
 					.filter(m => !!m)
-					.filter(msg => msg.content === data.d.content)
+					.filter(msg =>
+						msg.content === data.d.content &&
+						msg.attachments.length === data.d.attachments.length &&
+						// images that have a leven distance of <= 12 are similar enough
+						msg.attachments.every(a => data.d.attachments.some(a2 => leven(imageHashes.get(a.id) ?? "", imageHashes.get(a2.id) ?? "") <= 12)) // order doesnt matter
+					)
 
-				if (data.d.content.length) previousMessageIDs.push(data.d.id)
-				setTimeout(() => userRecentMessages.delete(data.d.author.id), 10000) // detect same message within 10 seconds
+				previousMessageIDs.push(data.d.id)
+				if (!previousMessageIDs.length) {
+					setTimeout(() => {
+						userRecentMessages.delete(data.d.author.id)
+						for (const aid of userImageHashesIndex.get(data.d.author.id) ?? []) {
+							userImageHashesIndex.delete(aid)
+						}
+						userImageHashesIndex.delete(data.d.author.id)
+					}, 10000) // detect same message within 10 seconds
+				}
 
 				if (previousMessagesIncludesThisMessage.length) {
 					triggerMap["scams"].trigger(data.d)

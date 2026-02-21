@@ -49,5 +49,13 @@ module.exports = {
 	/** @type {Record<string, Map<string, any>>} */
 	caches: {},
 	/** @type {Record<string, Promise<any>>} */
-	cachePromises: {}
+	cachePromises: {},
+		/** @type {Set<string>} */
+	timingOutSetIgnoreSpam: new Set(),
+	/** @type {Map<string, Array<string>>} */
+	userRecentMessages: new Map(),
+	/** @type {Map<string, string>} */
+	imageHashes: new Map(),
+	/** @type {Map<string, Array<string>>} */
+	userImageHashesIndex: new Map()
 }
