@@ -203,21 +203,28 @@ sync.addTemporaryListener(
 					const before = Date.now()
 					const notRecognized = data.d.attachments.filter(a => a.content_type && !imageMimes.has(a.content_type) && !videoMimes.has(a.content_type))
 					if (notRecognized.length) console.log(`Message contains file types not recognized: ${notRecognized.map(a => a.content_type).join(", ")}`)
-					const images = data.d.attachments.filter(a => a.content_type && imageMimes.has(a.content_type) && a.size <= 1024 * 1024 * 1024 * 50) // only download up to 50MB images
+					const images = data.d.attachments.filter(a => a.content_type && imageMimes.has(a.content_type) && a.size <= 1024 * 1024 * 50) // only download up to 50MB images
 					const existingHashes = userImageHashesIndex.get(data.d.author.id) ?? []
 					userImageHashesIndex.set(data.d.author.id, existingHashes)
 
-					const hashed = await Promise.all(
-						images.map(i => fetch(i.url)
-							.then(r => r.arrayBuffer())
-							.then(b => hash(Buffer.from(b))
-							.then(h => ({ id: i.id, hash: h }))))
-					)
+					/** @type {Array<{ id: string, hash: string }>} */
+					let hashed
+					try {
+						hashed = await Promise.all(
+							images.map(i => fetch(i.url)
+								.then(r => r.arrayBuffer())
+								.then(b => hash(Buffer.from(b))
+								.then(h => ({ id: i.id, hash: h }))))
+						)
+					} catch {
+						console.error("There was an error either downloading or hashing the images. Not retrying")
+						hashed = []
+					}
 					for (const info of hashed) {
 						existingHashes.push(info.id)
 						imageHashes.set(info.id, info.hash)
 					}
-					if (images.length) console.log(`${images.length} images took ${Date.now() - before}ms to hash`)
+					if (hashed.length) console.log(`${images.length} image(s) took ${Date.now() - before}ms to hash`)
 				}
 
 				const previousMessagesIncludesThisMessage = previousMessageIDs
