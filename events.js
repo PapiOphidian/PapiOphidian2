@@ -102,7 +102,12 @@ const triggerMap = {
 			const channel = reportChannelMap[msg.guild_id]
 			if (!channel) return
 
-			snow.channel.createMessage(channel, { content: `Timed out <@${msg.author.id}> for scamming.\n\`\`\`\n${msg.content.slice(0, 1800)}${msg.content.length > 1800 ? "..." : ""}\`\`\`\nImage hashes:\n${(userImageHashesIndex.get(msg.author.id) ?? []).map(aid => imageHashes.get(aid)).join(", ")}` })
+			const offendingContent = `${msg.content.slice(0, 1800)}${msg.content.length > 1800 ? "..." : ""}`
+			const offendingImageHashes = [...new Set((userImageHashesIndex.get(msg.author.id) ?? []).map(aid => imageHashes.get(aid)).join(", "))]
+
+			snow.channel.createMessage(channel, {
+				content: `Timed out <@${msg.author.id}> for scamming.\n\`\`\`\n${offendingContent}\`\`\`\nImage hashes:\n${offendingImageHashes}`
+			})
 		}
 	},
 	"phys_download": {
