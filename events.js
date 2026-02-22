@@ -98,14 +98,17 @@ const triggerMap = {
 			const channel = reportChannelMap[msg.guild_id]
 			if (!channel) return
 
-			const offendingContent = `${msg.content.slice(0, 1800)}${msg.content.length > 1800 ? "..." : ""}`
+			const offendingContent = `${msg.content.slice(0, 1900)}${msg.content.length > 1900 ? "..." : ""}`
 			const offendingImageHashes = userImageHashesIndex.get(msg.author.id) ?? []
 
 			/** @type {{ files: Array<{ href: string }> }} */
 			const inPublicDeleted = await fetch(`${config.copyparty_base_url}/public/automod_delete?ls&pw=${encodeURIComponent(config.copyparty_password)}`).then(d => d.json())
 
+			await snow.channel.createMessage(channel, {
+				content: `Timed out <@${msg.author.id}> for scamming.\n\`\`\`\n${offendingContent}\`\`\``
+			})
 			snow.channel.createMessage(channel, {
-				content: `Timed out <@${msg.author.id}> for scamming.\n\`\`\`\n${offendingContent}\`\`\`\nImages Posted:\n${offendingImageHashes.map(aid => {
+				content: `Images posted:\n${offendingImageHashes.map(aid => {
 					const found = inPublicDeleted.files.find(f => f.href.startsWith(aid))
 					return found ? `<${config.copyparty_base_url}/public/automod_delete/${found.href}>` : ""
 				}).filter(s => s.length).join("\n")}`
