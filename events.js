@@ -11,13 +11,10 @@ const { default: leven } = require("leven")
 
 const passthrough = require("./passthrough")
 
-const { sync, snow, cloud, db, timingOutSetIgnoreSpam, userRecentMessages, imageHashes, userImageHashesIndex } = passthrough
+const { sync, snow, cloud, db, timingOutSetIgnoreSpam, userRecentMessages, imageHashes, userImageHashesIndex, config } = passthrough
 
 /** @type {typeof import("./utils")} */
 const utils = sync.require("./utils")
-
-/** @type {typeof snow.channel.getChannelMessage} */
-const getChannelMessage = snow.channel.getChannelMessage.bind(snow.channel)
 
 const starboardContentFormat = "%emoji %reactions %jump"
 
@@ -39,7 +36,6 @@ const reportChannelMap = {
 	[mumsHouseGuildID]: "300752762973585418"
 }
 module.exports.reportChannelMap = reportChannelMap
-const mimetypeRegex = /\.(\w+)$/
 const imageMimes = new Set(["image/png", "image/gif", "image/jpg", "image/jpeg", "image/webp"])
 const videoMimes = new Set(["video/mp4", "video/mov", "video/webm"])
 
@@ -103,10 +99,16 @@ const triggerMap = {
 			if (!channel) return
 
 			const offendingContent = `${msg.content.slice(0, 1800)}${msg.content.length > 1800 ? "..." : ""}`
-			const offendingImageHashes = [...new Set((userImageHashesIndex.get(msg.author.id) ?? []).map(aid => imageHashes.get(aid)).join(", "))]
+			const offendingImageHashes = userImageHashesIndex.get(msg.author.id) ?? []
+
+			/** @type {{ files: Array<{ href: string }> }} */
+			const inPublicDeleted = await fetch(`${config.copyparty_base_url}/public/automod_delete?ls&pw=${encodeURIComponent(config.copyparty_password)}`).then(d => d.json())
 
 			snow.channel.createMessage(channel, {
-				content: `Timed out <@${msg.author.id}> for scamming.\n\`\`\`\n${offendingContent}\`\`\`\nImage hashes:\n${offendingImageHashes}`
+				content: `Timed out <@${msg.author.id}> for scamming.\n\`\`\`\n${offendingContent}\`\`\`\nImages Posted:\n${offendingImageHashes.map(aid => {
+					const found = inPublicDeleted.files.find(f => f.href.startsWith(aid))
+					return found ? `<${config.copyparty_base_url}/public/automod_delete/${found.href}>` : ""
+				}).filter(s => s.length).join("\n")}`
 			})
 		}
 	},
@@ -204,6 +206,9 @@ sync.addTemporaryListener(
 				const previousMessageIDs = userRecentMessages.get(data.d.author.id) ?? [] // spamming accross channels scam detection
 				userRecentMessages.set(data.d.author.id, previousMessageIDs)
 
+				/** @type {Array<{ info: import("discord-api-types/v10").APIAttachment, data: Buffer }>} */
+				let downloaded = []
+
 				if (data.d.attachments.length) {
 					const before = Date.now()
 					const notRecognized = data.d.attachments.filter(a => a.content_type && !imageMimes.has(a.content_type) && !videoMimes.has(a.content_type))
@@ -215,11 +220,13 @@ sync.addTemporaryListener(
 					/** @type {Array<{ id: string, hash: string }>} */
 					let hashed
 					try {
-						hashed = await Promise.all(
+						downloaded = await Promise.all(
 							images.map(i => fetch(i.url)
 								.then(r => r.arrayBuffer())
-								.then(b => hash(Buffer.from(b))
-								.then(h => ({ id: i.id, hash: h }))))
+								.then(b => ({ info: i, data: Buffer.from(b) })))
+						)
+						hashed = await Promise.all(
+							downloaded.map(d => hash(d.data).then(h => ({ id: d.info.id, hash: h })))
 						)
 					} catch {
 						console.error("There was an error either downloading or hashing the images. Not retrying")
@@ -258,6 +265,15 @@ sync.addTemporaryListener(
 				}
 
 				if (previousMessagesIncludesThisMessage.length) {
+					await Promise.all(
+						downloaded.map(d =>
+							fetch(`${config.copyparty_base_url}/public/automod_delete/${d.info.id}.${d.info.content_type?.replace("image/", "")}?pw=${encodeURIComponent(config.copyparty_password)}&life=86400`, { // file lifetime of 1 day
+								method: "put",
+								// @ts-expect-error IT WORKS AS A BUFFER
+								body: new Blob([d.data])
+							})
+						)
+					)
 					triggerMap["scams"].trigger(data.d)
 					for (const msg of previousMessagesIncludesThisMessage) {
 						snow.channel.deleteMessage(msg.channel_id, msg.id, "Likely spam scamming").catch(() => void 0)
@@ -357,7 +373,7 @@ async function starboardMessageHandler(mode, data) {
 
 	if (mode === "update" && cached) Object.assign(cached, update)
 
-	const message = cached ?? await utils.fetchObjectWithCache(getChannelMessage, "message", messageID, 1000 * 60 * 60 * 6, channelID, messageID).catch(() => void 0)
+	const message = cached ?? await utils.fetchObjectWithCache(snow.channel.getChannelMessage.bind(snow.channel), "message", messageID, 1000 * 60 * 60 * 6, channelID, messageID).catch(() => void 0)
 	if (!message) return
 	if (!message.reactions) message.reactions = []
 
