@@ -316,6 +316,7 @@ sync.addTemporaryListener(
 		}
 	}
 )
+sync.addTemporaryListener(cloud, "error", console.error)
 
 /** @type {Set<string>} */
 const deferedChanges = new Set()

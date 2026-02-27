@@ -8,12 +8,12 @@
   "license": "SEE LICENSE IN LICENSE",
   "private": true,
   "dependencies": {
-    "@types/node": "^25.3.0",
-    "cloudstorm": "^0.16.23",
+    "@types/node": "^25.3.2",
+    "cloudstorm": "^0.17.0",
     "heatsync": "^2.8.3",
     "imghash": "^1.1.2",
     "leven": "^4.1.0",
-    "snowtransfer": "^0.17.4",
+    "snowtransfer": "^0.17.5",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
   },
