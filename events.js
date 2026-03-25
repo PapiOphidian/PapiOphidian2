@@ -40,8 +40,7 @@ const imageMimes = new Set(["image/png", "image/gif", "image/jpg", "image/jpeg",
 const videoMimes = new Set(["video/mp4", "video/mov", "video/webm"])
 
 const physModGeneralID = "882927654007881778"
-const physModGameDevTalkID = "231062298008092673"
-module.exports.physModGameDevTalkID = physModGameDevTalkID
+module.exports.physModGeneralID = physModGeneralID
 
 const downloadProMessage = "Here's a video on how to download physics mod pro! The downloads are only through [Patreon](<https://patreon.com/Haubna>) and [Ko-Fi](<https://ko-fi.com/haubna>), but you don't *have* to pay.\nSupport is always appreciated however!"
 
@@ -134,7 +133,7 @@ const triggerMap = {
 				name: "pysiksmodtutorial.mp4",
 				file: fs.createReadStream(path.join(__dirname, "./assets/download-pro.mp4"))
 			}
-			if (msg.channel_id === physModGameDevTalkID) {
+			if (msg.channel_id !== physModGeneralID) {
 				snow.channel.deleteMessage(msg.channel_id, msg.id)
 				snow.channel.createMessage(physModGeneralID, {
 					content: `<@${msg.author.id}> this is the channel you should ask for support about physics mod in. To answer your question:\n${downloadProMessage}`,
@@ -203,6 +202,8 @@ sync.addTemporaryListener(
 				if (data.d.author.bot) return
 
 				if (timingOutSetIgnoreSpam.has(data.d.author.id)) return snow.channel.deleteMessage(data.d.channel_id, data.d.id, "Likely spam scamming").catch(() => void 0)
+				if (utils.checkTriggers(data.d, triggerMap)) return
+				if (await utils.checkCrashLog(data.d)) return
 
 				utils.setCachedObject("message", data.d.id, data.d, 1000 * 60 * 60) // cache messages for 1h for starboard
 
@@ -256,16 +257,21 @@ sync.addTemporaryListener(
 						msg.attachments.every(a => data.d.attachments.some(a2 => leven(imageHashes.get(a.id) ?? "", imageHashes.get(a2.id) ?? "") <= 12)) // order doesnt matter
 					)
 
-				previousMessageIDs.push(data.d.id)
 				if (!previousMessageIDs.length) {
+					// How long it should take to re-type that same message. At 5 characters, someone at a reasonably fast typing speed
+					// could re-send it within 1 second. Sending multiple times within 1 second is copy paste spamming or scamming.
+					// 50 characters would be 10 seconds
+					const timeout = data.d.content.length ? 0.2 * data.d.content.length * 1000 : 1500 * data.d.attachments.length
 					setTimeout(() => {
 						userRecentMessages.delete(data.d.author.id)
 						for (const aid of userImageHashesIndex.get(data.d.author.id) ?? []) {
 							userImageHashesIndex.delete(aid)
 						}
 						userImageHashesIndex.delete(data.d.author.id)
-					}, 10000) // detect same message within 10 seconds
+					}, timeout) // detect same message within 10 seconds
 				}
+
+				previousMessageIDs.push(data.d.id)
 
 				if (previousMessagesIncludesThisMessage.length) {
 					await Promise.all(
@@ -284,9 +290,6 @@ sync.addTemporaryListener(
 					return
 				}
 
-
-				if (utils.checkTriggers(data.d, triggerMap)) return
-				if (await utils.checkCrashLog(data.d)) return
 				break
 			}
 
