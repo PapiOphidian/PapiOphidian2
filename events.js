@@ -201,11 +201,13 @@ sync.addTemporaryListener(
 			case "MESSAGE_CREATE": {
 				if (data.d.author.bot) return
 
+				utils.setCachedObject("message", data.d.id, data.d, 1000 * 60 * 60) // cache messages for 1h for starboard
+
 				if (timingOutSetIgnoreSpam.has(data.d.author.id)) return snow.channel.deleteMessage(data.d.channel_id, data.d.id, "Likely spam scamming").catch(() => void 0)
 				if (utils.checkTriggers(data.d, triggerMap)) return
 				if (await utils.checkCrashLog(data.d)) return
 
-				utils.setCachedObject("message", data.d.id, data.d, 1000 * 60 * 60) // cache messages for 1h for starboard
+				let deleted = false
 
 				const previousMessageIDs = userRecentMessages.get(data.d.author.id) ?? [] // spamming accross channels scam detection
 				userRecentMessages.set(data.d.author.id, previousMessageIDs)
@@ -283,12 +285,15 @@ sync.addTemporaryListener(
 							})
 						)
 					)
+					deleted = true
 					triggerMap["scams"].trigger(data.d)
 					for (const msg of previousMessagesIncludesThisMessage) {
 						snow.channel.deleteMessage(msg.channel_id, msg.id, "Likely spam scamming").catch(() => void 0)
 					}
 					return
 				}
+
+				if (timingOutSetIgnoreSpam.has(data.d.author.id) && !deleted) return snow.channel.deleteMessage(data.d.channel_id, data.d.id, "Likely spam scamming").catch(() => void 0)
 
 				break
 			}
