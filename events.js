@@ -179,7 +179,7 @@ const triggerMap = {
 		},
 		trigger(msg) {
 			snow.channel.createMessage(msg.channel_id, {
-				content: "To fix other blocks breaking after breaking onw, please disable Collapse Physics by scrolling down in the Physics Settings and disabling Collapse Physics. If you're on a server, simply remove the mod from your server, as collapsing blocks are the only server-sided feature!",
+				content: "To fix other blocks breaking after breaking one, please disable Collapse Physics by scrolling down in the Physics Settings and disabling the setting. If you're on a server, simply remove the mod from it, as collapsing blocks are the only server-sided feature!",
 				message_reference: {
 					message_id: msg.id,
 					channel_id: msg.channel_id,
