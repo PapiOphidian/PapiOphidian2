@@ -242,7 +242,7 @@ sync.addTemporaryListener(
 						existingHashes.push(info.id)
 						imageHashes.set(info.id, info.hash)
 					}
-					if (hashed.length) console.log(`${images.length} image(s) took ${Date.now() - before}ms to hash`)
+					if (hashed.length) console.log(`${images.length} image(s) took ${Date.now() - before}ms to hash\n${hashed.join("\n")}`)
 				}
 
 				const previousMessagesIncludesThisMessage = previousMessageIDs
