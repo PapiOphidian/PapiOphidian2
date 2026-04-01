@@ -172,6 +172,25 @@ const triggerMap = {
 			})
 		}
 	},
+    
+    "phys_collapse": {
+		guild: physModGuildID,
+		matchers: [/how/i, /disable/i, /break/i, / falling /i, /blocks/i, / ?pojav/i],
+		test(positions) {
+			return utils.buildCase(positions, 15, 0, 1, 2, 3, 4) // how disable break falling blocks
+		},
+		trigger(msg) {
+			snow.channel.createMessage(msg.channel_id, {
+				content: "To fix other blocks breaking after breaking one, please disable Collapse Physics by scrolling down in the Physics Settings and disabling the setting. If you're on a server, simply remove the mod from it, as collapsing blocks are the only server-sided feature!",
+				message_reference: {
+					message_id: msg.id,
+					channel_id: msg.channel_id,
+					guild_id: msg.guild_id
+				}
+			})
+		}
+	},
+    
 	"phys_bump": {
 		guild: physModGuildID,
 		matchers: [/^(?:[^ ]+)?bump(?:[^ ]+)?$/i],
