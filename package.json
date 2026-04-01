@@ -1,7 +1,7 @@
 {
   "name": "papiophidian2",
   "version": "1.0.0",
-  "description": "A bot for the Physics Mod server by Haubna",
+  "description": "A bot for servers PapiOphidian moderates",
   "main": "index.js",
   "type": "commonjs",
   "author": "PapiOphidian",
@@ -15,9 +15,9 @@
     "leven": "^4.1.0",
     "snowtransfer": "^0.17.5",
     "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^6.0.1"
   },
   "resolutions": {
-    "discord-api-types": "0.38.40"
+    "discord-api-types": "0.38.43"
   }
 }
