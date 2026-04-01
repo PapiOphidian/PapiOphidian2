@@ -15,6 +15,8 @@ const { sync, snow, cloud, db, timingOutSetIgnoreSpam, userRecentMessages, image
 
 /** @type {typeof import("./utils")} */
 const utils = sync.require("./utils")
+/** @type {typeof import("./bannedHashes")} */
+const bannedHashes = sync.require("./bannedHashes.js")
 
 const starboardContentFormat = "%emoji %reactions %jump"
 
@@ -270,15 +272,15 @@ sync.addTemporaryListener(
 							userImageHashesIndex.delete(aid)
 						}
 						userImageHashesIndex.delete(data.d.author.id)
-					}, timeout) // detect same message within 10 seconds
+					}, timeout)
 				}
 
 				previousMessageIDs.push(data.d.id)
 
-				if (previousMessagesIncludesThisMessage.length) {
+				if (previousMessagesIncludesThisMessage.length || bannedHashes.hashes.some(h => downloaded.some(d => h === imageHashes.get(d.info.id)))) {
 					await Promise.all(
 						downloaded.map(d =>
-							fetch(`${config.copyparty_base_url}/public/automod_delete/${d.info.id}.${d.info.content_type?.replace("image/", "")}?pw=${encodeURIComponent(config.copyparty_password)}&life=86400`, { // file lifetime of 1 day
+							fetch(`${config.copyparty_base_url}/public/automod_delete/${imageHashes.get(d.info.id) ?? d.info.id}.${d.info.content_type?.replace("image/", "")}?pw=${encodeURIComponent(config.copyparty_password)}&life=86400`, { // file lifetime of 1 day
 								method: "put",
 								// @ts-expect-error IT WORKS AS A BUFFER
 								body: new Blob([d.data])
