@@ -100,7 +100,9 @@ const triggerMap = {
 			if (!channel) return
 
 			const offendingContent = `${msg.content.slice(0, 1900)}${msg.content.length > 1900 ? "..." : ""}`
-			const offendingImageHashes = userImageHashesIndex.get(msg.author.id) ?? []
+			/** @type {Array<string>} */
+			// @ts-expect-error
+			const offendingImageHashes = (userImageHashesIndex.get(msg.author.id) ?? []).map(aid => imageHashes.get(aid)).filter(h => !!h)
 
 			/** @type {{ files: Array<{ href: string }> }} */
 			const inPublicDeleted = await fetch(`${config.copyparty_base_url}/public/automod_delete?ls&pw=${encodeURIComponent(config.copyparty_password)}`).then(d => d.json())
@@ -109,8 +111,8 @@ const triggerMap = {
 				content: `Timed out <@${msg.author.id}> for scamming.\n\`\`\`\n${offendingContent}\`\`\``
 			})
 			snow.channel.createMessage(channel, {
-				content: `Images posted:\n${offendingImageHashes.map(aid => {
-					const found = inPublicDeleted.files.find(f => f.href.startsWith(aid))
+				content: `Images posted:\n${offendingImageHashes.map(h => {
+					const found = inPublicDeleted.files.find(f => f.href.startsWith(h))
 					return found ? `<${config.copyparty_base_url}/public/automod_delete/${found.href}>` : ""
 				}).filter(s => s.length).join("\n")}`
 			})
