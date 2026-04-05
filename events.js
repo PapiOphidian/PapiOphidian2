@@ -102,7 +102,7 @@ const triggerMap = {
 			const offendingContent = `${msg.content.slice(0, 1900)}${msg.content.length > 1900 ? "..." : ""}`
 			/** @type {Array<string>} */
 			// @ts-expect-error
-			const offendingImageHashes = (userImageHashesIndex.get(msg.author.id) ?? []).map(aid => imageHashes.get(aid)).filter(h => !!h)
+			const offendingImageHashes = [...new Set(userImageHashesIndex.get(msg.author.id) ?? []).map(aid => imageHashes.get(aid)).filter(h => !!h)]
 
 			/** @type {{ files: Array<{ href: string }> }} */
 			const inPublicDeleted = await fetch(`${config.copyparty_base_url}/public/automod_delete?ls&pw=${encodeURIComponent(config.copyparty_password)}`).then(d => d.json())
