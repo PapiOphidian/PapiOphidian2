@@ -8,16 +8,16 @@
   "license": "SEE LICENSE IN LICENSE",
   "private": true,
   "dependencies": {
-    "@types/node": "^25.3.2",
+    "@types/node": "^25.6.0",
     "cloudstorm": "^0.17.0",
-    "heatsync": "^2.8.3",
-    "imghash": "^1.1.2",
+    "heatsync": "^3.0.0",
+    "imghash": "^1.1.3",
     "leven": "^4.1.0",
     "snowtransfer": "^0.17.5",
     "sqlite": "^5.1.1",
     "sqlite3": "^6.0.1"
   },
   "resolutions": {
-    "discord-api-types": "0.38.43"
+    "discord-api-types": "0.38.47"
   }
 }
