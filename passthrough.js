@@ -57,5 +57,7 @@ module.exports = {
 	/** @type {Map<string, string>} */
 	imageHashes: new Map(),
 	/** @type {Map<string, Array<string>>} */
-	userImageHashesIndex: new Map()
+	userImageHashesIndex: new Map(),
+	/** @type {Map<string, NodeJS.Timeout>} */
+	userTimeoutSpamIndex: new Map()
 }

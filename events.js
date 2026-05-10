@@ -11,7 +11,7 @@ const { default: leven } = require("leven")
 
 const passthrough = require("./passthrough")
 
-const { sync, snow, cloud, db, timingOutSetIgnoreSpam, userRecentMessages, imageHashes, userImageHashesIndex, config } = passthrough
+const { sync, snow, cloud, db, timingOutSetIgnoreSpam, userRecentMessages, imageHashes, userImageHashesIndex, config, userTimeoutSpamIndex } = passthrough
 
 /** @type {typeof import("./utils")} */
 const utils = sync.require("./utils")
@@ -211,6 +211,22 @@ sync.addTemporaryListener(
 				if (utils.checkTriggers(data.d, triggerMap)) return
 				if (await utils.checkCrashLog(data.d)) return
 
+				const makeTimeout = () => {
+					if (userTimeoutSpamIndex.has(data.d.author.id)) clearTimeout(userTimeoutSpamIndex.get(data.d.author.id))
+					// How long it should take to re-type that same message. At 5 characters, someone at a reasonably fast typing speed
+					// could re-send it within 1 second. Sending multiple times within 1 second is copy paste spamming or scamming.
+					// 50 characters would be 10 seconds
+					const timeoutDuration = data.d.content.length ? 0.2 * data.d.content.length * 1000 : 3000 * data.d.attachments.length
+					const timeout = setTimeout(() => {
+						userRecentMessages.delete(data.d.author.id)
+						for (const aid of userImageHashesIndex.get(data.d.author.id) ?? []) {
+							userImageHashesIndex.delete(aid)
+						}
+						userImageHashesIndex.delete(data.d.author.id)
+					}, timeoutDuration)
+					userTimeoutSpamIndex.set(data.d.author.id, timeout)
+				}
+
 				let deleted = false
 
 				const previousMessageIDs = userRecentMessages.get(data.d.author.id) ?? [] // spamming accross channels scam detection
@@ -226,6 +242,8 @@ sync.addTemporaryListener(
 					const images = data.d.attachments.filter(a => a.content_type && imageMimes.has(a.content_type) && a.size <= 1024 * 1024 * 50) // only download up to 50MB images
 					const existingHashes = userImageHashesIndex.get(data.d.author.id) ?? []
 					userImageHashesIndex.set(data.d.author.id, existingHashes)
+
+					if (userTimeoutSpamIndex.has(data.d.author.id)) makeTimeout()
 
 					/** @type {Array<{ id: string, hash: string }>} */
 					let hashed
@@ -263,19 +281,7 @@ sync.addTemporaryListener(
 						msg.attachments.every(a => data.d.attachments.some(a2 => leven(imageHashes.get(a.id) ?? "", imageHashes.get(a2.id) ?? "") <= 12)) // order doesnt matter
 					)
 
-				if (!previousMessageIDs.length) {
-					// How long it should take to re-type that same message. At 5 characters, someone at a reasonably fast typing speed
-					// could re-send it within 1 second. Sending multiple times within 1 second is copy paste spamming or scamming.
-					// 50 characters would be 10 seconds
-					const timeout = data.d.content.length ? 0.2 * data.d.content.length * 1000 : 1500 * data.d.attachments.length
-					setTimeout(() => {
-						userRecentMessages.delete(data.d.author.id)
-						for (const aid of userImageHashesIndex.get(data.d.author.id) ?? []) {
-							userImageHashesIndex.delete(aid)
-						}
-						userImageHashesIndex.delete(data.d.author.id)
-					}, timeout)
-				}
+				if (!previousMessageIDs.length) makeTimeout()
 
 				previousMessageIDs.push(data.d.id)
 
