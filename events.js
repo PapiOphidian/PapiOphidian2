@@ -108,13 +108,18 @@ const triggerMap = {
 			const inPublicDeleted = await fetch(`${config.copyparty_base_url}/public/automod_delete?ls&pw=${encodeURIComponent(config.copyparty_password)}`).then(d => d.json())
 
 			await snow.channel.createMessage(channel, {
-				content: `Timed out <@${msg.author.id}> for scamming.\n\`\`\`\n${offendingContent}\`\`\``
+				content: `Timed out <@${msg.author.id}> for scamming.` +
+				offendingContent.length ? `\`\`\`\n${offendingContent}\`\`\`` : ""
 			})
+
+			const images = offendingImageHashes.map(h => {
+				const found = inPublicDeleted.files.find(f => f.href.startsWith(h))
+				return found ? `<${config.copyparty_base_url}/public/automod_delete/${found.href}>` : ""
+			}).filter(s => s.length)
+
+			if (!images.length) return
 			snow.channel.createMessage(channel, {
-				content: `Images posted:\n${offendingImageHashes.map(h => {
-					const found = inPublicDeleted.files.find(f => f.href.startsWith(h))
-					return found ? `<${config.copyparty_base_url}/public/automod_delete/${found.href}>` : ""
-				}).filter(s => s.length).join("\n")}`
+				content: `Images posted:\n${images.join("\n")}`
 			})
 		}
 	},
