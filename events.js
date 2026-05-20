@@ -75,7 +75,7 @@ const triggerMap = {
 			if (!msg.guild_id) return
 
 			const timeoutAndReport = !timingOutSetIgnoreSpam.has(msg.author.id)
-			timingOutSetIgnoreSpam.add(msg.author.id)
+			if (!timingOutSetIgnoreSpam.has(msg.author.id)) timingOutSetIgnoreSpam.add(msg.author.id)
 			setTimeout(() => timingOutSetIgnoreSpam.delete(msg.author.id), 10000)
 
 			/** @type {Array<Promise<any>>} */
@@ -104,12 +104,13 @@ const triggerMap = {
 			// @ts-expect-error
 			const offendingImageHashes = [...new Set((userImageHashesIndex.get(msg.author.id) ?? []).map(aid => imageHashes.get(aid)).filter(h => !!h))]
 
+			console.log("offending hashes timed out for:", offendingImageHashes)
+
 			/** @type {{ files: Array<{ href: string }> }} */
-			const inPublicDeleted = await fetch(`${config.copyparty_base_url}/public/automod_delete?ls&pw=${encodeURIComponent(config.copyparty_password)}`).then(d => d.json())
+			const inPublicDeleted = await fetch(`${config.copyparty_base_url}/public/automod_delete?ls&pw=${encodeURIComponent(config.copyparty_password)}`).then(d => d.json()).catch(() => ({ files: [] }))
 
 			await snow.channel.createMessage(channel, {
-				content: `Timed out <@${msg.author.id}> for scamming.` +
-				offendingContent.length ? `\`\`\`\n${offendingContent}\`\`\`` : ""
+				content: `Timed out <@${msg.author.id}> for scamming.${offendingContent.length ? `\`\`\`\n${offendingContent}\`\`\`` : ""}`
 			})
 
 			const images = offendingImageHashes.map(h => {
@@ -142,13 +143,7 @@ const triggerMap = {
 				name: "pysiksmodtutorial.mp4",
 				file: fs.createReadStream(path.join(__dirname, "./assets/download-pro.mp4"))
 			}
-			if (msg.channel_id !== physModGeneralID) {
-				snow.channel.deleteMessage(msg.channel_id, msg.id)
-				snow.channel.createMessage(physModGeneralID, {
-					content: `<@${msg.author.id}> this is the channel you should ask for support about physics mod in. To answer your question:\n${downloadProMessage}`,
-					files: [file]
-				})
-			}	else {
+			if (msg.channel_id === physModGeneralID) {
 				snow.channel.createMessage(msg.channel_id, {
 					content: downloadProMessage,
 					files: [file],
@@ -157,6 +152,12 @@ const triggerMap = {
 						channel_id: msg.channel_id,
 						guild_id: msg.guild_id
 					}
+				})
+			}	else {
+				snow.channel.deleteMessage(msg.channel_id, msg.id)
+				snow.channel.createMessage(physModGeneralID, {
+					content: `<@${msg.author.id}> this is the channel you should ask for support about physics mod in. To answer your question:\n${downloadProMessage}`,
+					files: [file]
 				})
 			}
 		}
@@ -291,15 +292,26 @@ sync.addTemporaryListener(
 				previousMessageIDs.push(data.d.id)
 
 				if (previousMessagesIncludesThisMessage.length || bannedHashes.hashes.some(h => downloaded.some(d => h === imageHashes.get(d.info.id)))) {
-					await Promise.all(
-						downloaded.map(d =>
-							fetch(`${config.copyparty_base_url}/public/automod_delete/${imageHashes.get(d.info.id) ?? d.info.id}.${d.info.content_type?.replace("image/", "")}?pw=${encodeURIComponent(config.copyparty_password)}&life=86400`, { // file lifetime of 1 day
-								method: "put",
-								// @ts-expect-error IT WORKS AS A BUFFER
-								body: new Blob([d.data])
-							})
-						)
-					)
+					if (!timingOutSetIgnoreSpam.has(data.d.author.id)) timingOutSetIgnoreSpam.add(data.d.author.id)
+					setTimeout(() => timingOutSetIgnoreSpam.delete(data.d.author.id), 10000)
+					if (downloaded.length) {
+						/** @type {{ files: Array<{ href: string }> }} */
+						const inPublicDeleted = await fetch(`${config.copyparty_base_url}/public/automod_delete?ls&pw=${encodeURIComponent(config.copyparty_password)}`).then(d => d.json()).catch(() => ({ files: [] }))
+						// prevent multi uploads
+						const notAlreadyUploaded = downloaded.filter(d => !inPublicDeleted.files.some(i => i.href.startsWith(imageHashes.get(d.info.id) ?? d.info.id)))
+						if (notAlreadyUploaded.length) {
+							await Promise.all(
+								notAlreadyUploaded.map(d =>
+									fetch(`${config.copyparty_base_url}/public/automod_delete/${imageHashes.get(d.info.id) ?? d.info.id}.${d.info.content_type?.replace("image/", "")}?pw=${encodeURIComponent(config.copyparty_password)}&life=86400`, { // file lifetime of 1 day
+										method: "put",
+										// @ts-expect-error IT WORKS AS A BUFFER
+										body: new Blob([d.data])
+									})
+								)
+							)
+							console.log("uploaded files of likely scamming")
+						}
+					}
 					deleted = true
 					triggerMap["scams"].trigger(data.d)
 					for (const msg of previousMessagesIncludesThisMessage) {
