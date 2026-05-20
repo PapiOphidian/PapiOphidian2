@@ -33,7 +33,7 @@ module.exports.buildCase = buildCase
  * 	ignoreRoles?: Array<string>,
  * 	matchers: Array<RegExp>,
  * 	test: (positions: Array<number>) => boolean,
- * 	trigger: (message: import("discord-api-types/v10").GatewayMessageCreateDispatchData) => unknown
+ * 	trigger: (message: import("discord-api-types/v10").GatewayMessageCreateDispatchData, force?: boolean) => unknown
  * }>} triggerMap
  */
 function checkTriggers(msg, triggerMap) {

@@ -71,10 +71,10 @@ const triggerMap = {
 				|| utils.buildCase(positions, 15, 3, 6) // gift ... [steam (using a masked link)
 				|| utils.buildCase(positions, 10, 7) // I'll help the first 20...
 		},
-		async trigger(msg) {
+		async trigger(msg, force) {
 			if (!msg.guild_id) return
 
-			const timeoutAndReport = !timingOutSetIgnoreSpam.has(msg.author.id)
+			const timeoutAndReport = !timingOutSetIgnoreSpam.has(msg.author.id) || !!force
 			if (!timingOutSetIgnoreSpam.has(msg.author.id)) timingOutSetIgnoreSpam.add(msg.author.id)
 			setTimeout(() => timingOutSetIgnoreSpam.delete(msg.author.id), 10000)
 
@@ -313,7 +313,7 @@ sync.addTemporaryListener(
 						}
 					}
 					deleted = true
-					triggerMap["scams"].trigger(data.d)
+					triggerMap["scams"].trigger(data.d, true)
 					for (const msg of previousMessagesIncludesThisMessage) {
 						snow.channel.deleteMessage(msg.channel_id, msg.id, "Likely spam scamming").catch(() => void 0)
 					}
