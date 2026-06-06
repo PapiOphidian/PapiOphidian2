@@ -222,7 +222,7 @@ sync.addTemporaryListener(
 					// How long it should take to re-type that same message. At 5 characters, someone at a reasonably fast typing speed
 					// could re-send it within 1 second. Sending multiple times within 1 second is copy paste spamming or scamming.
 					// 50 characters would be 10 seconds
-					const timeoutDuration = data.d.content.length ? 0.2 * data.d.content.length * 1000 : 3000 * data.d.attachments.length
+					const timeoutDuration = data.d.content.length && !data.d.attachments.length ? 0.2 * data.d.content.length * 1000 : 3000 * data.d.attachments.length
 					const timeout = setTimeout(() => {
 						userRecentMessages.delete(data.d.author.id)
 						for (const aid of userImageHashesIndex.get(data.d.author.id) ?? []) {
