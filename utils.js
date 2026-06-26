@@ -15,13 +15,13 @@ function buildCase(positions, maxDistance = 10, ...indexes) {
 	// allow for short circuiting
 	const careAbout = indexes.map(i => positions[i])
 	return careAbout.every(i => nn1(i))
-		&& (maxDistance !== - 1
-			? careAbout.every((i, ind) => {
+		&& (maxDistance === - 1
+			? true
+			: careAbout.every((i, ind) => {
 					if (ind === 0) return true
 					const difference = i - careAbout[ind - 1]
 					return difference > 0 && difference < maxDistance
-				})
-			: true)
+				}))
 }
 module.exports.buildCase = buildCase
 
@@ -59,7 +59,7 @@ module.exports.checkTriggers = checkTriggers
 const crashLogTypes = [".txt", ".log"]
 /** @param {import("discord-api-types/v10").GatewayMessageCreateDispatchData} msg */
 async function checkCrashLog(msg) {
-	if (crashLogTypes.find(type => msg.attachments[0]?.filename.endsWith(type))) {
+	if (crashLogTypes.some(type => msg.attachments[0]?.filename.endsWith(type))) {
 		const attachment = await fetch(msg.attachments[0].url).then(r => r.text()).catch(() => "")
 		const onAttachment = performCrashCheckOn(attachment)
 		if (onAttachment.length) {
@@ -163,7 +163,7 @@ async function sendCrashLogBreakdown(msg, log, errors) {
 	}
 
 	const modsString = modsInfo.mods.length
-		? `${modsInfo.mods.slice(0, indexReachingMods).map(m => m.version === defaultVersionPlaceholder ? m.modid : `${m.modid}@${m.version}`).join(", ")}${indexReachingMods !== -1 ? ` and ${modsInfo.mods.length - (indexReachingMods + 1)} others` : ""}`
+		? `${modsInfo.mods.slice(0, indexReachingMods).map(m => m.version === defaultVersionPlaceholder ? m.modid : `${m.modid}@${m.version}`).join(", ")}${indexReachingMods === -1 ? "" : ` and ${modsInfo.mods.length - (indexReachingMods + 1)} others`}`
 		: "Unknown"
 
 	const physModFound = modsInfo.mods.find(m => m.modid === "physicsmod" || m.modid.startsWith("physics-mod"))

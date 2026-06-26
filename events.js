@@ -1,5 +1,5 @@
-const fs = require("fs")
-const path = require("path")
+const fs = require("node:fs")
+const path = require("node:path")
 
 const {
 	ComponentType,
@@ -85,7 +85,7 @@ const triggerMap = {
 				const timeout = new Date()
 				timeout.setDate(timeout.getDate() + 7) // 1 week timeout
 				promises.push(
-					snow.guild.updateGuildMember(msg.guild_id, msg.author.id, {
+					snow.guild.editGuildMember(msg.guild_id, msg.author.id, {
 						communication_disabled_until: timeout.toISOString()
 					})
 				)
@@ -308,7 +308,7 @@ sync.addTemporaryListener(
 										body: new Blob([d.data])
 									})
 								)
-							)
+							).catch(console.error);
 							console.log("uploaded files of likely scamming")
 						}
 					}
@@ -468,14 +468,7 @@ async function starboardMessageHandler(mode, data) {
 	/** @type {DBStarboardMap | undefined} */
 	const existingPost = await db.get("SELECT * FROM starboard_map WHERE message_id =?", [messageID])
 
-	if (!existingPost) {
-		const instantPromote = !!sb.instant_promote_role_ids?.split(",").find(r => add.member?.roles.includes(r))
-		if (reaction.count >= sb.min || instantPromote) {
-			components.unshift({ type: ComponentType.TextDisplay, content: utils.replace(starboardContentFormat, { "emoji": sb.emoji, "reactions": reaction.count, "jump": `https://discord.com/channels/${guildID}/${channelID}/${messageID}` }) })
-			const result = await snow.channel.createMessage(sb.channel_id, { flags: MessageFlags.IsComponentsV2, components, allowed_mentions: { parse: [] } })
-			db.all("INSERT INTO starboard_map (message_id, sb_message_id) VALUES (?, ?)", [message.id, result.id])
-		}
-	} else {
+	if (existingPost) {
 		deferedChanges.add(messageID)
 		setTimeout(() => {
 			const reactionUpToDate = message.reactions?.find(r => r.emoji.name === sb.emoji)
@@ -485,6 +478,13 @@ async function starboardMessageHandler(mode, data) {
 			}
 			deferedChanges.delete(messageID)
 		}, 5000)
+	} else {
+		const instantPromote = !!sb.instant_promote_role_ids?.split(",").find(r => add.member?.roles.includes(r))
+		if (reaction.count >= sb.min || instantPromote) {
+			components.unshift({ type: ComponentType.TextDisplay, content: utils.replace(starboardContentFormat, { "emoji": sb.emoji, "reactions": reaction.count, "jump": `https://discord.com/channels/${guildID}/${channelID}/${messageID}` }) })
+			const result = await snow.channel.createMessage(sb.channel_id, { flags: MessageFlags.IsComponentsV2, components, allowed_mentions: { parse: [] } })
+			db.all("INSERT INTO starboard_map (message_id, sb_message_id) VALUES (?, ?)", [message.id, result.id])
+		}
 	}
 }
 
