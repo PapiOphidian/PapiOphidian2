@@ -17,13 +17,18 @@ commands.assign([
 		guild_ids: [events.physModGuildID],
 		/** @param {import("./packages/commands").ContextMenuCommand} cmd */
 		async process(cmd) {
+			if (!cmd.member?.roles.find(r => events.physModGoodRoles.includes(r))) {
+				snow.interaction.editOriginalInteractionResponse(cmd.application_id, cmd.token, {
+					content: "You don't have permissions to use this command"
+				}).catch(() => void 0)
+			}
 			await snow.interaction.deleteOriginalInteractionResponse(cmd.application_id, cmd.token)
 			const message = cmd.data.messages.get(cmd.target)
 			if (!message) throw new Error("PANICK!")
 			if (cmd.channel.id !== events.physModGeneralID) {
 				snow.channel.createMessage(events.reportChannelMap[events.physModGuildID], {
 					content: `<@${cmd.author.id}> used trigger get pro in <#${cmd.channel.id}> deleting message to redirect:\n\`\`\`${message.content.slice(0, 1900)}${message.content.length > 1900 ? "..." : ""}\n\`\`\``
-				})
+				}).catch(() => void 0)
 			}
 			events.triggerMap["phys_download"].trigger(message)
 		}
@@ -62,7 +67,7 @@ commands.assign([
 
 			snow.interaction.editOriginalInteractionResponse(cmd.application_id, cmd.token, {
 				content: `${user ? `<@${user.id}>, s` : "S"}omeone thinks you should read this: https://discord.com/channels/231062298008092673/1115343312417718323/1115343312417718323`
-			})
+			}).catch(() => void 0)
 		}
 	},
 	{
@@ -83,7 +88,7 @@ commands.assign([
 					guild_id: cmd.guild_id || void 0,
 					message_id: message.id
 				}
-			})
+			}).catch(() => void 0)
 		}
 	},
 	{
@@ -109,7 +114,7 @@ commands.assign([
 					guild_id: cmd.guild_id || void 0,
 					message_id: message.id
 				}
-			})
+			}).catch(() => void 0)
 		}
 	}
 ])

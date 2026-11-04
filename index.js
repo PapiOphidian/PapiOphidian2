@@ -28,7 +28,7 @@ passthrough.cloud.on("error", console.error)
 	const replfunctions = passthrough.sync.require("./replfunctions")
 
 	void new REPLProvider({ passthrough, replfunctions })
-})()
+})().catch(() => void 0)
 
 passthrough.sync.events.on("any", file => console.log(`${file} reloaded`))
 

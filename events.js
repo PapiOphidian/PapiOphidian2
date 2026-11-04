@@ -121,7 +121,7 @@ const triggerMap = {
 			if (!images.length) return
 			snow.channel.createMessage(channel, {
 				content: `Images posted:\n${images.join("\n")}`
-			})
+			}).catch(() => void 0)
 		}
 	},
 	"phys_download": {
@@ -152,13 +152,13 @@ const triggerMap = {
 						channel_id: msg.channel_id,
 						guild_id: msg.guild_id
 					}
-				})
+				}).catch(() => void 0)
 			}	else {
-				snow.channel.deleteMessage(msg.channel_id, msg.id)
+				snow.channel.deleteMessage(msg.channel_id, msg.id).catch(() => void 0)
 				snow.channel.createMessage(physModGeneralID, {
 					content: `<@${msg.author.id}> this is the channel you should ask for support about physics mod in. To answer your question:\n${downloadProMessage}`,
 					files: [file]
-				})
+				}).catch(() => void 0)
 			}
 		}
 	},
@@ -177,7 +177,7 @@ const triggerMap = {
 					channel_id: msg.channel_id,
 					guild_id: msg.guild_id
 				}
-			})
+			}).catch(() => void 0)
 		}
 	},
 	"phys_bump": {
@@ -187,7 +187,7 @@ const triggerMap = {
 			return positions[0] !== -1
 		},
 		trigger(msg) {
-			snow.channel.deleteMessage(msg.channel_id, msg.id)
+			snow.channel.deleteMessage(msg.channel_id, msg.id).catch(() => void 0)
 		}
 	}
 }
@@ -326,24 +326,24 @@ sync.addTemporaryListener(
 			}
 
 			case "MESSAGE_UPDATE": {
-				starboardMessageHandler("update", data.d)
+				starboardMessageHandler("update", data.d).catch(() => void 0)
 				break
 			}
 
 			case "MESSAGE_DELETE": {
 				utils.deleteCachedObject("message", data.d.id)
 				// todo delete messages from userRecentMessages
-				db.all("DELETE FROM starboard_map WHERE message_id =?", [data.d.id])
+				db.all("DELETE FROM starboard_map WHERE message_id =?", [data.d.id]).catch(() => void 0)
 				break
 			}
 
 			case "MESSAGE_REACTION_ADD": {
-				starboardMessageHandler("add", data.d)
+				starboardMessageHandler("add", data.d).catch(() => void 0)
 				break
 			}
 
 			case "MESSAGE_REACTION_REMOVE": {
-				starboardMessageHandler("remove", data.d)
+				starboardMessageHandler("remove", data.d).catch(() => void 0)
 				break
 			}
 
@@ -483,7 +483,7 @@ async function starboardMessageHandler(mode, data) {
 		if (reaction.count >= sb.min || instantPromote) {
 			components.unshift({ type: ComponentType.TextDisplay, content: utils.replace(starboardContentFormat, { "emoji": sb.emoji, "reactions": reaction.count, "jump": `https://discord.com/channels/${guildID}/${channelID}/${messageID}` }) })
 			const result = await snow.channel.createMessage(sb.channel_id, { flags: MessageFlags.IsComponentsV2, components, allowed_mentions: { parse: [] } })
-			db.all("INSERT INTO starboard_map (message_id, sb_message_id) VALUES (?, ?)", [message.id, result.id])
+			db.all("INSERT INTO starboard_map (message_id, sb_message_id) VALUES (?, ?)", [message.id, result.id]).catch(() => void 0)
 		}
 	}
 }

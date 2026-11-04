@@ -63,7 +63,7 @@ async function checkCrashLog(msg) {
 		const attachment = await fetch(msg.attachments[0].url).then(r => r.text()).catch(() => "")
 		const onAttachment = performCrashCheckOn(attachment)
 		if (onAttachment.length) {
-			sendCrashLogBreakdown(msg, attachment, onAttachment)
+			sendCrashLogBreakdown(msg, attachment, onAttachment).catch(() => void 0)
 			return true
 		}
 	}
@@ -261,7 +261,7 @@ function getModList(log) {
 	}
 
 	for (let i = 0; i < mods.length; i++) {
-		const shouldPrune = toPrune.find(matcher => {
+		const shouldPrune = toPrune.some(matcher => {
 			const matchMethod = matcher[0]
 			const toMatch = matcher.slice(1)
 
