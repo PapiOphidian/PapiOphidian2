@@ -21,6 +21,7 @@ commands.assign([
 				snow.interaction.editOriginalInteractionResponse(cmd.application_id, cmd.token, {
 					content: "You don't have permissions to use this command"
 				}).catch(() => void 0)
+				return
 			}
 			await snow.interaction.deleteOriginalInteractionResponse(cmd.application_id, cmd.token)
 			const message = cmd.data.messages.get(cmd.target)
