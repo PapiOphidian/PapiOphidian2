@@ -73,8 +73,8 @@ async function checkCrashLog(msg) {
 module.exports.checkCrashLog = checkCrashLog
 
 
-const javaErrorFrameRegex = /[\t ]at ((?:\w+\.)?[\w\.[\]():~? $/\-+<>%!/{},@]+)/
-const exceptionHeadRegex = /((?:[\w.]+Exception: .+)|(?:Stacktrace:))/
+const javaErrorFrameRegex = /[\t ]at [\w.[\]():~? $/\-+<>%!{},@]+/
+const exceptionHeadRegex = /((?<![\w.])[\w.]+Exception: .+|Stacktrace:)/
 /** @param {string} str */
 function performCrashCheckOn(str) {
 	const isMC = str.includes("minecraft")
@@ -212,12 +212,12 @@ async function sendCrashLogBreakdown(msg, log, errors) {
 
 
 const easyModListRegex = /Loading (\d+) mods:/
-const modAndVersionRegex1 = /([^ ]+) (.+)/
+const modAndVersionRegex1 = /^([^ ]+) (.+)/
 const fabricModsListCrashRegex = /Fabric Mods:/
 const forgeModsListCrashRegex = /Mod List:/
 const foundModFileRegex = /Found mod file "?([^"]+?\.jar)"?/g
-const modAndVersionRegex2 = /([^:]+): [^\d]+(.+)/
-const modAndVersionRegex3 = /[^|]+\|[^|]+\|([^|]+)\|([^|]+)/
+const modAndVersionRegex2 = /^([^:]+): \D+(.+)/
+const modAndVersionRegex3 = /^[^|]+\|[^|]+\|([^|]+)\|([^|]+)/
 const jarFileExtRegex = /\.jar$/
 /** @param {string} log */
 function getModList(log) {
